@@ -65,7 +65,455 @@ export const sampleInvoiceData = {
                 unitPrice: 600.00,
                 discount: 0.00,
                 total: 600.00
-            }
+            },
+            {
+                index: 5,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 6,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 7,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 8,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 9,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 10,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 11,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 12,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 13,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 14,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 15,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 16,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 17,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 18,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 19,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 20,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 21,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 22,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 23,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 24,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 25,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 26,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 27,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 28,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 29,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 30,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 31,
+                description: 'Report Raccoon Enterprise License (Annual Subscription - 100 Seats)',
+                quantity: 1,
+                unitPrice: 2400.00,
+                discount: 200.00,
+                total: 2200.00
+            },
+            {
+                index: 32,
+                description: 'High-Throughput PDF & Print Generation Engine (Tier 2 Addon)',
+                quantity: 2,
+                unitPrice: 450.00,
+                discount: 0.00,
+                total: 900.00
+            },
+            {
+                index: 33,
+                description: 'Custom ERP Data Connectors & Onboarding Consultation',
+                quantity: 8,
+                unitPrice: 125.00,
+                discount: 50.00,
+                total: 950.00
+            },
+            {
+                index: 34,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 35,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 36,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 37,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 38,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 39,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 40,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 41,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 42,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 43,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 44,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 45,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 46,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 47,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 48,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 49,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 50,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 51,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 52,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 53,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 54,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 55,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 56,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 57,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 58,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 59,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
+            {
+                index: 60,
+                description: 'Dedicated 24/7 SLA Technical Support & Maintenance (Q3)',
+                quantity: 1,
+                unitPrice: 600.00,
+                discount: 0.00,
+                total: 600.00
+            },
         ],
         subtotal: 4650.00,
         discountTotal: 250.00,

@@ -1,0 +1,82 @@
+<div class="canvas-viewport">
+  <!-- A4 Print Paper Sheet -->
+  <div
+    class="print-sheet"
+    [style.width.mm]="template.settings.width"
+    [style.min-height.mm]="template.settings.height"
+    [style.padding-top.mm]="template.settings.margin.top"
+    [style.padding-bottom.mm]="template.settings.margin.bottom"
+    [style.padding-left.mm]="template.settings.margin.left"
+    [style.padding-right.mm]="template.settings.margin.right"
+  >
+    @for (section of template.sections; track section.id) {
+      <div
+        class="template-section"
+        [class.section-page-header]="section.type === 'pageHeader'"
+        [class.section-report-header]="section.type === 'reportHeader'"
+        [class.section-body]="section.type === 'body'"
+        [class.section-report-footer]="section.type === 'reportFooter'"
+        [class.section-page-footer]="section.type === 'pageFooter'"
+        [style.min-height.mm]="section.height.value"
+      >
+        @for (element of section.elements; track element.id) {
+          @if (isTable(element)) {
+            <!-- Dynamic Repeater Table -->
+            <div
+              class="report-table"
+              [style.border-collapse]="element.borderCollapse ? 'collapse' : 'separate'"
+            >
+              <!-- Header Row -->
+              <div
+                class="table-row table-header-row"
+                [style.grid-template-columns]="getTableColumnTemplate(element)"
+                [style.min-height.mm]="element.headerRow.height"
+              >
+                @for (th of element.headerRow.cells; track th.id) {
+                  <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
+                    {{ resolveValue(th) }}
+                  </div>
+                }
+              </div>
+
+              <!-- Detail Rows (Repeated for dataset items) -->
+              @for (item of getTableData(element.datasetKey); track $index) {
+                <div
+                  class="table-row table-detail-row"
+                  [style.grid-template-columns]="getTableColumnTemplate(element)"
+                  [style.min-height.mm]="element.detailRow.height ?? 8"
+                >
+                  @for (td of element.detailRow.cells; track td.id) {
+                    <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
+                      {{ resolveValue(td, item) }}
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Optional Footer Row -->
+              @if (element.footerRow) {
+                <div
+                  class="table-row table-footer-row"
+                  [style.grid-template-columns]="getTableColumnTemplate(element)"
+                  [style.min-height.mm]="element.footerRow.height"
+                >
+                  @for (tf of element.footerRow.cells; track tf.id) {
+                    <div class="table-cell tf-cell" [ngStyle]="getCellStyles(tf)">
+                      {{ resolveValue(tf) }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else if (isTextOrField(element)) {
+            <!-- Grid Cell (Text or Field) -->
+            <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+              {{ resolveValue(element) }}
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>

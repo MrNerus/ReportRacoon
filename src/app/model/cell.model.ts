@@ -1,71 +1,51 @@
+import { ColumnWidth, DateFormat, NumberFormat, TextDecoration } from "./report.type";
+import { CellBorders, CellPadding } from "./style.model";
 
 export interface BaseCell {
-    type: 'Text' | 'Field' | 'Image' | 'Barcode' | 'Grid';
-    value?: string;
+    id: string; // Unique ID for designer selection
+    type: 'Text' | 'Field' | 'Table' | 'Image' | 'Line';
 
-    padding?: {
-        top: number;
-        bottom: number;
-        left: number;
-        right: number;
-    }
+    // Placement inside Grid or Table
+    rowIndex?: number;
+    colIndex?: number;
+    rowSpan?: number;
+    colSpan?: number;
 
-    border?: {
-        top?: {
-            width?: number;
-            color?: string;
-            style?: 'solid' | 'dashed' | 'dotted' | 'double';
-        }
-        bottom?: {
-            width?: number;
-            color?: string;
-            style?: 'solid' | 'dashed' | 'dotted' | 'double';
-        }
-        left?: {
-            width?: number;
-            color?: string;
-            style?: 'solid' | 'dashed' | 'dotted' | 'double';
-        }
-        right?: {
-            width?: number;
-            color?: string;
-            style?: 'solid' | 'dashed' | 'dotted' | 'double';
-        }
-    }
+    padding?: CellPadding;
+    border?: CellBorders;
+    background?: string;
 
-    rowSpan: number;
-    colSpan: number;
+    // Sizing
+    width?: { type: 'auto' | 'fixed' | 'percentage'; value?: number };
+    height?: { type: 'auto' | 'fixed'; value?: number };
 }
 
 export interface TextCell extends BaseCell {
-    type: 'Text' | 'Field',
+    type: 'Text' | 'Field';
+
+    value?: string;
+    staticText?: string;
 
     fontFamily?: string;
-    fontSize: number;
-    fontWeight: 'normal' | 'bold';
-
-    textDecoration: TextDecoration[];
-
+    fontSize: number; // in pt (standard for print)
+    fontWeight: 'normal' | 'bold' | '500' | '600' | '700';
+    fontStyle?: 'normal' | 'italic';
+    textDecoration?: 'none' | 'underline' | 'line-through';
     color?: string;
+    lineHeight?: number; // e.g., 1.2, 1.4
     background?: string;
 
     inlineAlignment: 'left' | 'center' | 'right' | 'justify';
     blockAlignment: 'top' | 'middle' | 'bottom';
 
-    overflow: 'wrap' | 'truncate' | 'clip' | 'ignore';
+    overflow: 'word-wrap' | 'character-wrap' | 'ellipsis' | 'clip' | 'ignore';
 
 }
 
-export interface DateField extends TextCell {
+export interface FieldCell extends TextCell {
     type: 'Field';
-    value: string;
-    format: 'dd/MM/yyyy' | 'MM/dd/yyyy' | 'yyyy-MM-dd';
-}
-
-export interface DateTimeField extends TextCell {
-    type: 'Field';
-    value: string;
-    format: 'dd/MM/yyyy HH:mm:ss' | 'MM/dd/yyyy HH:mm:ss' | 'yyyy-MM-dd HH:mm:ss';
+    bindingKey?: string; // e.g., 'invoice.customerName' or 'item.rate'
+    formatter?: NumberFormat | DateFormat;
 }
 
 export interface ImageCell extends BaseCell {
@@ -74,13 +54,32 @@ export interface ImageCell extends BaseCell {
     scaleY: number;
 }
 
-export interface GridCell extends BaseCell {
-    columns: number;
+// --- DYNAMIC REPEATER TABLE (For Invoices & Grade Sheets) ---
+export interface ReportTable extends BaseCell {
+    type: 'Table';
+    datasetKey: string; // e.g. "invoice.lineItems" or "student.marks"
+    borderCollapse?: boolean;
 
-    columnWidth: ColumnWidth[];
-    children: BaseCell[];
+    columns: {
+        id: string;
+        header: string;
+        width: ColumnWidth;
+        align: 'left' | 'center' | 'right';
+    }[];
 
+    headerRow: {
+        height: number;
+        cells: TextCell[];
+        repeatOnEveryPage: boolean; // Repeats column header if table spans multiple pages
+    };
+
+    detailRow: {
+        height?: number; // auto or fixed
+        cells: TextCell[]; // Cells bind to item properties like "quantity", "unitPrice"
+    };
+
+    footerRow?: {
+        height: number;
+        cells: TextCell[]; // e.g. Subtotals, summary formulas
+    };
 }
-
-export type TextDecoration = 'normal' | 'italic' | 'strikethrough' | 'overline' | 'underline';
-export type ColumnWidth = { type: 'auto' | 'fixed' | 'percentage' | 'remaining'; value?: number };

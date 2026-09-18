@@ -1,82 +1,456 @@
-<div class="canvas-viewport">
-  <!-- A4 Print Paper Sheet -->
-  <div
-    class="print-sheet"
-    [style.width.mm]="template.settings.width"
-    [style.min-height.mm]="template.settings.height"
-    [style.padding-top.mm]="template.settings.margin.top"
-    [style.padding-bottom.mm]="template.settings.margin.bottom"
-    [style.padding-left.mm]="template.settings.margin.left"
-    [style.padding-right.mm]="template.settings.margin.right"
-  >
-    @for (section of template.sections; track section.id) {
-      <div
-        class="template-section"
-        [class.section-page-header]="section.type === 'pageHeader'"
-        [class.section-report-header]="section.type === 'reportHeader'"
-        [class.section-body]="section.type === 'body'"
-        [class.section-report-footer]="section.type === 'reportFooter'"
-        [class.section-page-footer]="section.type === 'pageFooter'"
-        [style.min-height.mm]="section.height.value"
+<main class="main-container">
+  <!-- Canvas Control Toolbar (Hidden in Print) -->
+  <div class="canvas-toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-brand">🦝 Report Raccoon</span>
+      <div class="toolbar-divider"></div>
+
+      <!-- Paper Type Selector -->
+      <label class="control-label">Paper:</label>
+      <select
+        class="toolbar-select"
+        [ngModel]="selectedPageType"
+        (ngModelChange)="setPageType($event)"
+        title="Select Paper Size"
       >
-        @for (element of section.elements; track element.id) {
-          @if (isTable(element)) {
-            <!-- Dynamic Repeater Table -->
-            <div
-              class="report-table"
-              [style.border-collapse]="element.borderCollapse ? 'collapse' : 'separate'"
-            >
-              <!-- Header Row -->
+        <option value="A4">A4 (210 × 297 mm)</option>
+        <option value="Letter">US Letter (215.9 × 279.4 mm)</option>
+        <option value="Legal">US Legal (215.9 × 355.6 mm)</option>
+        <option value="Receipt">Receipt (80mm Continuous)</option>
+        <option value="Custom">Custom</option>
+      </select>
+
+      <!-- Orientation Toggle (for sheet papers) -->
+      @if (!isContinuous && selectedPageType !== 'Receipt') {
+        <div class="btn-group">
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="selectedOrientation === 'portrait'"
+            (click)="setOrientation('portrait')"
+            title="Portrait"
+          >
+            Portrait
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            [class.active]="selectedOrientation === 'landscape'"
+            (click)="setOrientation('landscape')"
+            title="Landscape"
+          >
+            Landscape
+          </button>
+        </div>
+      }
+
+      <!-- Continuous Roll vs Paginated Sheet Toggle -->
+      <button
+        type="button"
+        class="toolbar-btn mode-btn"
+        [class.active]="isContinuous"
+        (click)="toggleContinuous()"
+        title="Toggle Continuous Roll vs Paginated Sheets"
+      >
+        @if (isContinuous) {
+          📜 Continuous Roll (Active)
+        } @else {
+          📄 Paginated Sheets (Active)
+        }
+      </button>
+    </div>
+
+    <div class="toolbar-group">
+      <!-- Page Count Summary -->
+      <span class="page-badge">
+        @if (isContinuous) {
+          Continuous Roll (Receipt Mode)
+        } @else {
+          {{ pages.length }} {{ pages.length === 1 ? 'Page' : 'Pages' }} Total
+        }
+      </span>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Zoom Controls -->
+      <div class="zoom-controls">
+        <button
+          type="button"
+          class="toolbar-btn zoom-btn"
+          (click)="zoomOut()"
+          [disabled]="zoomLevel <= 0.2"
+          title="Zoom Out"
+        >
+          −
+        </button>
+        <span class="zoom-display">{{ zoomPercentage }}%</span>
+        <button
+          type="button"
+          class="toolbar-btn zoom-btn"
+          (click)="zoomIn()"
+          [disabled]="zoomLevel >= 3.0"
+          title="Zoom In"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn reset-btn"
+          (click)="resetToFit()"
+          title="Reset to Fit Viewport (Resets Pan & Zoom)"
+        >
+          Fit
+        </button>
+        <button
+          type="button"
+          class="toolbar-btn reset-btn"
+          (click)="resetTo100()"
+          [class.active]="zoomPercentage === 100"
+          title="Reset to 100% (Resets Pan & Zoom)"
+        >
+          100%
+        </button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Print Button -->
+      <button
+        type="button"
+        class="toolbar-btn print-btn"
+        (click)="printReport()"
+        title="Print Document or Save as PDF"
+      >
+        🖨️ Print / PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Canvas Viewport (Draggable & Zoomable) -->
+  <div
+    #canvasViewport
+    class="canvas-viewport"
+    [class.is-dragging]="isDragging"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointercancel)="onPointerUp($event)"
+  >
+    <!-- Transformable Canvas Stage Layer -->
+    <div
+      #canvasStage
+      class="canvas-stage"
+      [style.transform]="stageTransform"
+    >
+      <div #pagesContainer class="pages-container">
+      @for (page of pages; track page.pageNumber) {
+        <div class="page-wrapper">
+          <!-- Visual Page Tag (for Screen Preview) -->
+          <div class="screen-page-tag">
+            <span class="tag-number">Page {{ page.pageNumber }} of {{ page.totalPages }}</span>
+            <span class="tag-size">{{ currentSettings.width }}mm × {{ currentSettings.height }}mm ({{ currentSettings.pageType }})</span>
+          </div>
+
+          <!-- Real-life Paper Sheet -->
+          <div
+            class="print-sheet"
+            [class.continuous-sheet]="isContinuous"
+            [style.width.mm]="currentSettings.width"
+            [style.height.mm]="isContinuous ? null : currentSettings.height"
+            [style.min-height.mm]="isContinuous ? currentSettings.height : null"
+            [style.padding-top.mm]="currentSettings.margin.top"
+            [style.padding-bottom.mm]="currentSettings.margin.bottom"
+            [style.padding-left.mm]="currentSettings.margin.left"
+            [style.padding-right.mm]="currentSettings.margin.right"
+          >
+            <!-- 1. Page Header (Repeats at top of each page if configured) -->
+            @if (page.pageHeader) {
               <div
-                class="table-row table-header-row"
-                [style.grid-template-columns]="getTableColumnTemplate(element)"
-                [style.min-height.mm]="element.headerRow.height"
+                class="template-section section-page-header"
+                [style.min-height.mm]="page.pageHeader.height.value"
               >
-                @for (th of element.headerRow.cells; track th.id) {
-                  <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
-                    {{ resolveValue(th) }}
+                @for (element of page.pageHeader.elements; track element.id) {
+                  @if (isTextOrField(element)) {
+                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
+                    </div>
+                  }
+                }
+              </div>
+            }
+
+            <!-- 2. Report Header (Appears on Page 1 only) -->
+            @if (page.reportHeader) {
+              <div
+                class="template-section section-report-header"
+                [style.min-height.mm]="page.reportHeader.height.value"
+              >
+                @for (element of page.reportHeader.elements; track element.id) {
+                  @if (isTextOrField(element)) {
+                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
+                    </div>
+                  }
+                }
+              </div>
+            }
+
+            <!-- 3. Body Section (Table Chunks & Other Elements) -->
+            @if (page.bodyTableChunks.length > 0 || page.otherBodyElements.length > 0) {
+              <div class="template-section section-body">
+                <!-- Other Non-Table Body Elements -->
+                @for (element of page.otherBodyElements; track element.id) {
+                  @if (isTextOrField(element)) {
+                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
+                    </div>
+                  }
+                }
+
+                <!-- Table Chunks -->
+                @for (chunk of page.bodyTableChunks; track chunk.table.id + '-' + chunk.startIndex) {
+                  <div
+                    class="report-table"
+                    [style.border-collapse]="chunk.table.borderCollapse ? 'collapse' : 'separate'"
+                  >
+                    <!-- Table Header Row (Repeats on every page if configured) -->
+                    @if (chunk.showHeader) {
+                      <div
+                        class="table-row table-header-row"
+                        [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
+                        [style.min-height.mm]="chunk.table.headerRow.height"
+                      >
+                        @for (th of chunk.table.headerRow.cells; track th.id) {
+                          <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
+                            {{ resolveValue(th, undefined, page.pageNumber, page.totalPages) }}
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <!-- Table Detail Rows for this Page Chunk -->
+                    @for (item of chunk.items; track (item.index ?? $index)) {
+                      <div
+                        class="table-row table-detail-row"
+                        [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
+                        [style.min-height.mm]="chunk.table.detailRow.height ?? 8"
+                      >
+                        @for (td of chunk.table.detailRow.cells; track td.id) {
+                          <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
+                            {{ resolveValue(td, item, page.pageNumber, page.totalPages) }}
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <!-- Table Footer Row (if present on last chunk) -->
+                    @if (chunk.showFooter && chunk.table.footerRow) {
+                      <div
+                        class="table-row table-footer-row"
+                        [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
+                        [style.min-height.mm]="chunk.table.footerRow.height"
+                      >
+                        @for (tf of chunk.table.footerRow.cells; track tf.id) {
+                          <div class="table-cell tf-cell" [ngStyle]="getCellStyles(tf)">
+                            {{ resolveValue(tf, undefined, page.pageNumber, page.totalPages) }}
+                          </div>
+                        }
+                      </div>
+                    }
                   </div>
                 }
               </div>
+            }
 
-              <!-- Detail Rows (Repeated for dataset items) -->
-              @for (item of getTableData(element.datasetKey); track $index) {
-                <div
-                  class="table-row table-detail-row"
-                  [style.grid-template-columns]="getTableColumnTemplate(element)"
-                  [style.min-height.mm]="element.detailRow.height ?? 8"
-                >
-                  @for (td of element.detailRow.cells; track td.id) {
-                    <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
-                      {{ resolveValue(td, item) }}
+            <!-- 4. Report Footer (Appears on the final section) -->
+            @if (page.reportFooter) {
+              <div
+                class="template-section section-report-footer"
+                [style.min-height.mm]="page.reportFooter.height.value"
+              >
+                @for (element of page.reportFooter.elements; track element.id) {
+                  @if (isTextOrField(element)) {
+                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
                     </div>
                   }
-                </div>
-              }
+                }
+              </div>
+            }
 
-              <!-- Optional Footer Row -->
-              @if (element.footerRow) {
-                <div
-                  class="table-row table-footer-row"
-                  [style.grid-template-columns]="getTableColumnTemplate(element)"
-                  [style.min-height.mm]="element.footerRow.height"
-                >
-                  @for (tf of element.footerRow.cells; track tf.id) {
-                    <div class="table-cell tf-cell" [ngStyle]="getCellStyles(tf)">
-                      {{ resolveValue(tf) }}
+            <!-- 5. Page Footer (Pinned at bottom of each page) -->
+            @if (page.pageFooter) {
+              <div
+                class="template-section section-page-footer"
+                [style.min-height.mm]="page.pageFooter.height.value"
+              >
+                @for (element of page.pageFooter.elements; track element.id) {
+                  @if (isTextOrField(element)) {
+                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
                     </div>
                   }
-                </div>
-              }
-            </div>
-          } @else if (isTextOrField(element)) {
-            <!-- Grid Cell (Text or Field) -->
-            <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-              {{ resolveValue(element) }}
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+      </div>
+    </div>
+
+    <!-- Floating Canvas Controls Overlay (HUD) -->
+    <div class="canvas-hud" (pointerdown)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="hud-btn"
+        (click)="zoomOut()"
+        [disabled]="zoomLevel <= 0.2"
+        title="Zoom Out (−)"
+      >
+        −
+      </button>
+      <span class="hud-zoom-text">{{ zoomPercentage }}%</span>
+      <button
+        type="button"
+        class="hud-btn"
+        (click)="zoomIn()"
+        [disabled]="zoomLevel >= 3.0"
+        title="Zoom In (+)"
+      >
+        +
+      </button>
+      <div class="hud-separator"></div>
+      <button
+        type="button"
+        class="hud-btn hud-pill-btn"
+        (click)="resetToFit()"
+        title="Fit Page to Viewport"
+      >
+        Fit
+      </button>
+      <button
+        type="button"
+        class="hud-btn hud-pill-btn"
+        [class.active]="zoomPercentage === 100"
+        (click)="resetTo100()"
+        title="Zoom to 100%"
+      >
+        100%
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- Hidden Offscreen Container for Accurate Real-Life Paper Measurement (Never visible) -->
+<div
+  #measureContainer
+  class="measure-container"
+  [style.width.mm]="printableWidthMm"
+>
+  @if (templatePageHeader) {
+    <div
+      #measurePageHeader
+      class="template-section section-page-header"
+      [style.min-height.mm]="templatePageHeader.height.value"
+    >
+      @for (element of templatePageHeader.elements; track element.id) {
+        @if (isTextOrField(element)) {
+          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+            {{ resolveValue(element) }}
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @if (templateReportHeader) {
+    <div
+      #measureReportHeader
+      class="template-section section-report-header"
+      [style.min-height.mm]="templateReportHeader.height.value"
+    >
+      @for (element of templateReportHeader.elements; track element.id) {
+        @if (isTextOrField(element)) {
+          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+            {{ resolveValue(element) }}
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <div #measureBodySection class="template-section section-body">
+    @for (element of otherBodyElements; track element.id) {
+      @if (isTextOrField(element)) {
+        <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+          {{ resolveValue(element) }}
+        </div>
+      }
+    }
+
+    @if (templateTable) {
+      <div class="report-table" [style.border-collapse]="templateTable.borderCollapse ? 'collapse' : 'separate'">
+        <div
+          #measureTableHeader
+          class="table-row table-header-row"
+          [style.grid-template-columns]="getTableColumnTemplate(templateTable)"
+          [style.min-height.mm]="templateTable.headerRow.height"
+        >
+          @for (th of templateTable.headerRow.cells; track th.id) {
+            <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
+              {{ resolveValue(th) }}
             </div>
           }
+        </div>
+
+        @for (item of allTableItems; track (item.index ?? $index)) {
+          <div
+            #measureDetailRow
+            class="table-row table-detail-row"
+            [style.grid-template-columns]="getTableColumnTemplate(templateTable)"
+            [style.min-height.mm]="templateTable.detailRow.height ?? 8"
+          >
+            @for (td of templateTable.detailRow.cells; track td.id) {
+              <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
+                {{ resolveValue(td, item) }}
+              </div>
+            }
+          </div>
         }
       </div>
     }
   </div>
+
+  @if (templateReportFooter) {
+    <div
+      #measureReportFooter
+      class="template-section section-report-footer"
+      [style.min-height.mm]="templateReportFooter.height.value"
+    >
+      @for (element of templateReportFooter.elements; track element.id) {
+        @if (isTextOrField(element)) {
+          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+            {{ resolveValue(element) }}
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @if (templatePageFooter) {
+    <div
+      #measurePageFooter
+      class="template-section section-page-footer"
+      [style.min-height.mm]="templatePageFooter.height.value"
+    >
+      @for (element of templatePageFooter.elements; track element.id) {
+        @if (isTextOrField(element)) {
+          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+            {{ resolveValue(element) }}
+          </div>
+        }
+      }
+    </div>
+  }
 </div>

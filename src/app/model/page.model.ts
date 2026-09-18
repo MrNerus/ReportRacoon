@@ -1,10 +1,21 @@
 import { BaseCell } from "./cell.model";
 
+export type PageType = 'A4' | 'Letter' | 'Legal' | 'Custom' | 'Receipt';
+
+export const PAGE_DIMENSIONS: Record<PageType, { width: number; height: number }> = {
+    A4: { width: 210, height: 297 },
+    Letter: { width: 215.9, height: 279.4 },
+    Legal: { width: 215.9, height: 355.6 },
+    Custom: { width: 210, height: 297 },
+    Receipt: { width: 80, height: 200 }
+};
+
 export interface PageSetting {
-    pageType: 'A4' | 'Letter' | 'Legal' | 'Custom';
+    pageType: PageType;
     orientation: 'portrait' | 'landscape';
     width: number;  // in mm
     height: number; // in mm
+    continuous?: boolean; // When true (e.g., thermal receipt rolls), page expands vertically without pagination
 
     // Hardware printer safe margins (usually 5mm-15mm)
     margin: {

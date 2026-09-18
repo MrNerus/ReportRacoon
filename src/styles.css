@@ -1,1 +1,64 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+    --size-xs: 0.25rem;
+    --size-sm: 0.5rem;
+    --size-md: 1rem;
+    --size-lg: 1.25rem;
+    --size-xl: 1.5rem;
+    --size-2xl: 2rem;
+}
+
+.rounded-sm.rounded-xs { border-radius: var(--size-xs); }
+.rounded-sm.rounded-sm { border-radius: var(--size-sm); }
+.rounded-md.rounded-md { border-radius: var(--size-md); }
+.rounded-lg.rounded-lg { border-radius: var(--size-lg); }
+.rounded-xl.rounded-xl { border-radius: var(--size-xl); }
+.rounded-2xl.rounded-2xl { border-radius: var(--size-2xl); }
+
+.p-xs.p-xs { padding: var(--size-xs); }
+.p-sm.p-sm { padding: var(--size-sm); }
+.p-md.p-md { padding: var(--size-md); }
+.p-lg.p-lg { padding: var(--size-lg); }
+.p-xl.p-xl { padding: var(--size-xl); }
+.p-2xl.p-2xl { padding: var(--size-2xl); }
+
+.pt-xs.pt-xs { padding-top: var(--size-xs); }
+.pt-sm.pt-sm { padding-top: var(--size-sm); }
+.pt-md.pt-md { padding-top: var(--size-md); }
+.pt-lg.pt-lg { padding-top: var(--size-lg); }
+.pt-xl.pt-xl { padding-top: var(--size-xl); }
+.pt-2xl.pt-2xl { padding-top: var(--size-2xl); }
+
+.pr-xs.pr-xs { padding-right: var(--size-xs); }
+.pr-sm.pr-sm { padding-right: var(--size-sm); }
+.pr-md.pr-md { padding-right: var(--size-md); }
+.pr-lg.pr-lg { padding-right: var(--size-lg); }
+.pr-xl.pr-xl { padding-right: var(--size-xl); }
+.pr-2xl.pr-2xl { padding-right: var(--size-2xl); }
+
+.pb-xs.pb-xs { padding-bottom: var(--size-xs); }
+.pb-sm.pb-sm { padding-bottom: var(--size-sm); }
+.pb-md.pb-md { padding-bottom: var(--size-md); }
+.pb-lg.pb-lg { padding-bottom: var(--size-lg); }
+.pb-xl.pb-xl { padding-bottom: var(--size-xl); }
+.pb-2xl.pb-2xl { padding-bottom: var(--size-2xl); }
+
+.pl-xs.pl-xs { padding-left: var(--size-xs); }
+.pl-sm.pl-sm { padding-left: var(--size-sm); }
+.pl-md.pl-md { padding-left: var(--size-md); }
+.pl-lg.pl-lg { padding-left: var(--size-lg); }
+.pl-xl.pl-xl { padding-left: var(--size-xl); }
+.pl-2xl.pl-2xl { padding-left: var(--size-2xl); }
+
+.plr-xs.plr-xs { padding-inline: var(--size-xs); }
+.plr-sm.plr-sm { padding-inline: var(--size-sm); }
+.plr-md.plr-md { padding-inline: var(--size-md); }
+.plr-lg.plr-lg { padding-inline: var(--size-lg); }
+.plr-xl.plr-xl { padding-inline: var(--size-xl); }
+.plr-2xl.plr-2xl { padding-inline: var(--size-2xl); }
+
+.ptb-xs.ptb-xs { padding-block: var(--size-xs); }
+.ptb-sm.ptb-sm { padding-block: var(--size-sm); }
+.ptb-md.ptb-md { padding-block: var(--size-md); }
+.ptb-lg.ptb-lg { padding-block: var(--size-lg); }
+.ptb-xl.ptb-xl { padding-block: var(--size-xl); }
+.ptb-2xl.ptb-2xl { padding-block: var(--size-2xl); }

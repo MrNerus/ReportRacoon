@@ -1,135 +1,101 @@
-<main class="main-container">
+<main class="main-container p-xl gap-xl">
   <!-- Canvas Control Toolbar (Hidden in Print) -->
-  <div class="canvas-toolbar">
-    <div class="toolbar-group">
-      <span class="toolbar-brand">🦝 Report Raccoon</span>
-      <div class="toolbar-divider"></div>
+  <div class="canvas-toolbar height-available  gap-md">
+    <app-fg-container [interactive]="true" title="Page Setting" subtitle="Page setting">
+      <form [formGroup]="pageSettingForm" class="reactive-form">
+        <div class="display-grid ignore-child-size" style="grid-template-columns: 1fr 2fr; gap: var(--size-sm) var(--size-md)">
+          <label for="pageType" class="fg-label">Page Type</label>
+          <app-fg-dropdown
+            formControlName="pageType"
+            [options]="[
+              { label: 'A4 (210 × 297 mm)', value: 'A4' },
+              { label: 'US Letter (215.9 × 279.4 mm)', value: 'Letter' },
+              { label: 'US Legal (215.9 × 355.6 mm)', value: 'Legal' },
+              { label: 'Custom', value: 'Custom' }
+            ]"
+            (valueChange)="applyPageSettings()"
+          ></app-fg-dropdown>
 
-      <!-- Paper Type Selector -->
-      <label class="control-label">Paper:</label>
-      <select
-        class="toolbar-select"
-        [ngModel]="selectedPageType"
-        (ngModelChange)="setPageType($event)"
-        title="Select Paper Size"
-      >
-        <option value="A4">A4 (210 × 297 mm)</option>
-        <option value="Letter">US Letter (215.9 × 279.4 mm)</option>
-        <option value="Legal">US Legal (215.9 × 355.6 mm)</option>
-        <option value="Receipt">Receipt (80mm Continuous)</option>
-        <option value="Custom">Custom</option>
-      </select>
+          <label for="pageSplit" class="fg-label">Page Split</label>
+          <app-fg-segment-toggle
+            formControlName="pageSplit"
+            [options]="[
+              { label: 'Continuous', value: 'continuous' },
+              { label: 'Paginated', value: 'paginated' }
+            ]"
+            (onChange)="applyPageSettings()"
+          ></app-fg-segment-toggle>
+          
+          @if (pageSetting.pageSplit.value === 'paginated') {
+            <label for="orientation" class="fg-label">Orientation</label>
+            <app-fg-dropdown
+              formControlName="orientation"
+              [options]="[
+                { label: 'Portrait', value: 'portrait' },
+                { label: 'Landscape', value: 'landscape' }
+              ]"
+              (valueChange)="applyPageSettings()"
+            ></app-fg-dropdown>
+          }
 
-      <!-- Orientation Toggle (for sheet papers) -->
-      @if (!isContinuous && selectedPageType !== 'Receipt') {
-        <div class="btn-group">
-          <button
-            type="button"
-            class="toolbar-btn"
-            [class.active]="selectedOrientation === 'portrait'"
-            (click)="setOrientation('portrait')"
-            title="Portrait"
-          >
-            Portrait
-          </button>
-          <button
-            type="button"
-            class="toolbar-btn"
-            [class.active]="selectedOrientation === 'landscape'"
-            (click)="setOrientation('landscape')"
-            title="Landscape"
-          >
-            Landscape
-          </button>
+          @if (pageSetting['pageType'].value === 'Custom') {
+            <label for="width" class="fg-label">Width</label>
+            <app-fg-text-input
+              formControlName="width"
+            ></app-fg-text-input>
+
+            @if (pageSetting['pageSplit'].value === 'paginated') {
+              <label for="height" class="fg-label">Height</label>
+              <app-fg-text-input
+                formControlName="height"
+              ></app-fg-text-input>
+            }
+          }
+          
+          <app-fgm-field label="Margin" style="grid-column: 1 / span 2;">
+            <div class="display-grid gap-md" style="grid-template-columns: 1fr 1fr 1fr 1fr;" [formGroup]="pageSettingForm.controls['margin']">
+              
+              <div class="display-flex flex-direction-column">
+                <label for="top" class="fg-label">Top</label>
+                <app-fg-text-input
+                  formControlName="top"
+                ></app-fg-text-input>
+              </div>
+              
+              <div class="display-flex flex-direction-column">
+                <label for="right" class="fg-label">Right</label>
+                <app-fg-text-input
+                  formControlName="right"
+                ></app-fg-text-input>
+              </div>
+              
+              <div class="display-flex flex-direction-column">
+                <label for="bottom" class="fg-label">Bottom</label>
+                <app-fg-text-input
+                  formControlName="bottom"
+                ></app-fg-text-input>
+              </div>
+              
+              <div class="display-flex flex-direction-column">
+                <label for="left" class="fg-label">Left</label>
+                <app-fg-text-input
+                  formControlName="left"
+                ></app-fg-text-input>
+              </div>
+            </div>
+          </app-fgm-field>
         </div>
-      }
-
-      <!-- Continuous Roll vs Paginated Sheet Toggle -->
-      <button
-        type="button"
-        class="toolbar-btn mode-btn"
-        [class.active]="isContinuous"
-        (click)="toggleContinuous()"
-        title="Toggle Continuous Roll vs Paginated Sheets"
-      >
-        @if (isContinuous) {
-          📜 Continuous Roll (Active)
-        } @else {
-          📄 Paginated Sheets (Active)
-        }
-      </button>
-    </div>
-
-    <div class="toolbar-group">
-      <!-- Page Count Summary -->
-      <span class="page-badge">
-        @if (isContinuous) {
-          Continuous Roll (Receipt Mode)
-        } @else {
-          {{ pages.length }} {{ pages.length === 1 ? 'Page' : 'Pages' }} Total
-        }
-      </span>
-
-      <div class="toolbar-divider"></div>
-
-      <!-- Zoom Controls -->
-      <div class="zoom-controls">
-        <button
-          type="button"
-          class="toolbar-btn zoom-btn"
-          (click)="zoomOut()"
-          [disabled]="zoomLevel <= 0.2"
-          title="Zoom Out"
-        >
-          −
-        </button>
-        <span class="zoom-display">{{ zoomPercentage }}%</span>
-        <button
-          type="button"
-          class="toolbar-btn zoom-btn"
-          (click)="zoomIn()"
-          [disabled]="zoomLevel >= 3.0"
-          title="Zoom In"
-        >
-          +
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn reset-btn"
-          (click)="resetToFit()"
-          title="Reset to Fit Viewport (Resets Pan & Zoom)"
-        >
-          Fit
-        </button>
-        <button
-          type="button"
-          class="toolbar-btn reset-btn"
-          (click)="resetTo100()"
-          [class.active]="zoomPercentage === 100"
-          title="Reset to 100% (Resets Pan & Zoom)"
-        >
-          100%
-        </button>
-      </div>
-
-      <div class="toolbar-divider"></div>
-
-      <!-- Print Button -->
-      <button
-        type="button"
-        class="toolbar-btn print-btn"
-        (click)="printReport()"
-        title="Print Document or Save as PDF"
-      >
-        🖨️ Print / PDF
-      </button>
-    </div>
+      </form>
+    </app-fg-container>
+    <app-fg-container [interactive]="true" title="Page Setting" subtitle="Page setting" class="height-available">
+      add template
+    </app-fg-container>
   </div>
 
   <!-- Main Canvas Viewport (Draggable & Zoomable) -->
   <div
     #canvasViewport
-    class="canvas-viewport"
+    class="canvas-viewport height-available soft-edge-container"
     [class.is-dragging]="isDragging"
     (pointerdown)="onPointerDown($event)"
     (pointermove)="onPointerMove($event)"
@@ -338,7 +304,37 @@
       >
         100%
       </button>
+      <div class="hud-separator"></div>
+      <button
+        type="button"
+        class="hud-btn hud-pill-btn"
+        (click)="printReport()"
+        title="Print Pdf"
+      >
+        Print
+      </button>
+      <button
+        type="button"
+        class="hud-btn hud-pill-btn"
+        (click)="printReport()"
+        title="Save Template"
+      >
+        Save Template
+      </button>
+      <div class="hud-separator"></div>
+      <div class="fg-label">
+        @if (isContinuous) {
+          Continuous Roll (Receipt Mode)
+        } @else {
+          {{ pages.length }} {{ pages.length === 1 ? 'Page' : 'Pages' }} Total
+        }
+      </div>
     </div>
+  </div>
+  
+  
+  <div>
+
   </div>
 </main>
 

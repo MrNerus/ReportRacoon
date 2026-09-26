@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { RenderCanvasComponent } from './component/render-canvas/render-canvas.component';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RenderCanvasComponent],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

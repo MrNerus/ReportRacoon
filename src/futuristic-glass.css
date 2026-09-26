@@ -1,0 +1,1485 @@
+/**
+ * ============================================================================
+ * Futuristic Glassmorphic Component Design System (FG-UI)
+ * Inspired by Midjourney & Figma AI-Driven Smart Home Glassmorphism
+ * ============================================================================
+ * 
+ * Key Architectural Highlights:
+ * 1. Minimalistic OKLCH & color-mix() Color Engine:
+ *    - Only 3 master hues and 2 base surfaces defined at :root.
+ *    - All tints, borders, inner glows, highlights, and pressed states are
+ *      dynamically calculated via `color-mix(in oklch, ...)` and `oklch()`.
+ *    - Changing just 1-2 root variables recolors the entire UI uniformly!
+ * 2. Liquid Glass & Dynamic Island Physics:
+ *    - Spring cubic-bezier curves for elastic thumb and indicator sliding.
+ *    - Multi-layered specular hairline reflections & deep refractive shadows.
+ * 3. Angular-Ready:
+ *    - Decoupled BEM class structure (`fg-*`).
+ *    - Predictable component APIs, easily mapped to Angular `@Component`.
+ */
+
+/* ==========================================================================
+   1. Dynamic OKLCH Color Engine & Minimalist Design Tokens
+   ========================================================================== */
+:root {
+  /* ------------------------------------------------------------------------
+     1.1 Master Hues & Core Color Tokens (Change these to re-theme everything)
+     ------------------------------------------------------------------------ */
+  --fg-hue-primary: 232;          /* Primary Brand: Electric Indigo / Sapphire */
+  --fg-hue-accent: 196;           /* Accent Glow: Neon Cyan / Ice Blue */
+  --fg-hue-secondary: 285;        /* Ambient Light: Ethereal Lavender / Violet */
+  --fg-hue-amber: 75;             /* Warm Highlight: Golden Amber */
+  --fg-hue-danger: 25;            /* Alert / Status: Coral Red */
+
+  /* Master Colors in OKLCH Color-space */
+  --fg-primary: oklch(0.66 0.19 var(--fg-hue-primary));
+  --fg-accent: oklch(0.78 0.16 var(--fg-hue-accent));
+  --fg-violet: oklch(0.72 0.17 var(--fg-hue-secondary));
+  --fg-amber: oklch(0.78 0.16 var(--fg-hue-amber));
+  --fg-danger: oklch(0.65 0.22 var(--fg-hue-danger));
+
+  /* Canvas & Surface Anchors */
+  --fg-canvas-base: oklch(0.12 0.035 var(--fg-hue-primary));
+  --fg-surface-light-base: oklch(0.97 0.015 var(--fg-hue-primary));
+
+  /* ------------------------------------------------------------------------
+     1.2 Dynamically Derived Tints, Glows & Fainter Shades via color-mix()
+     ------------------------------------------------------------------------ */
+  /* Ambient Glows */
+  --fg-glow-cyan: color-mix(in oklch, var(--fg-accent) 55%, transparent);
+  --fg-glow-cyan-dim: color-mix(in oklch, var(--fg-accent) 18%, transparent);
+  --fg-glow-primary: color-mix(in oklch, var(--fg-primary) 50%, transparent);
+  --fg-glow-violet: color-mix(in oklch, var(--fg-violet) 45%, transparent);
+
+  /* Typography Colors */
+  --fg-text-primary: oklch(0.98 0.01 var(--fg-hue-primary));
+  --fg-text-secondary: color-mix(in oklch, var(--fg-text-primary) 70%, var(--fg-accent) 15%);
+  --fg-text-muted: color-mix(in oklch, var(--fg-text-primary) 45%, var(--fg-canvas-base) 55%);
+  --fg-text-inverse: oklch(0.15 0.03 260);
+
+  /* Dark Obsidian Frosted Glass Tokens */
+  --fg-glass-dark-bg: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--fg-primary) 12%, rgba(18, 25, 48, 0.72)) 0%,
+    color-mix(in oklch, var(--fg-canvas-base) 88%, rgba(8, 12, 26, 0.85)) 100%
+  );
+  --fg-glass-dark-border: color-mix(in oklch, white 18%, var(--fg-accent) 10%);
+  --fg-glass-dark-border-hover: color-mix(in oklch, var(--fg-accent) 50%, white 30%);
+  --fg-glass-dark-highlight: color-mix(in oklch, white 35%, var(--fg-accent) 20%);
+  --fg-glass-dark-shadow: 
+    0 24px 60px -12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 color-mix(in oklch, white 25%, transparent);
+  --fg-glass-dark-inner-glow: inset 0 0 32px color-mix(in oklch, var(--fg-accent) 8%, transparent);
+
+  /* Luminous Milky Opaline Glass Tokens (Signature Bottom Sheet / Pill Cards) */
+  --fg-glass-light-bg: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--fg-surface-light-base) 94%, white) 0%,
+    color-mix(in oklch, var(--fg-surface-light-base) 86%, var(--fg-primary) 8%) 100%
+  );
+  --fg-glass-light-border: color-mix(in oklch, white 88%, var(--fg-accent) 12%);
+  --fg-glass-light-text: color-mix(in oklch, var(--fg-canvas-base) 85%, var(--fg-primary) 15%);
+  --fg-glass-light-muted: color-mix(in oklch, var(--fg-glass-light-text) 60%, transparent);
+  --fg-glass-light-item-bg: color-mix(in oklch, white 68%, var(--fg-surface-light-base) 32%);
+  --fg-glass-light-item-border: color-mix(in oklch, white 90%, transparent);
+  --fg-glass-light-shadow: 
+    0 30px 70px -15px color-mix(in oklch, var(--fg-canvas-base) 50%, transparent),
+    inset 0 1px 2px rgba(255, 255, 255, 0.95);
+
+  /* Pill & Button Glass Tokens */
+  --fg-pill-bg: color-mix(in oklch, var(--fg-primary) 18%, rgba(26, 36, 68, 0.55));
+  --fg-pill-border: color-mix(in oklch, white 20%, var(--fg-accent) 15%);
+  --fg-pill-hover: color-mix(in oklch, var(--fg-primary) 30%, rgba(45, 60, 110, 0.75));
+  --fg-pill-active: color-mix(in oklch, var(--fg-accent) 28%, var(--fg-primary) 35%);
+
+  /* ------------------------------------------------------------------------
+     1.3 Blur, Radii, & Spring Physics Timing
+     ------------------------------------------------------------------------ */
+  --fg-blur-sm: 10px;
+  --fg-blur-md: 20px;
+  --fg-blur-lg: 32px;
+  --fg-blur-xl: 44px;
+
+  --fg-radius-xs: 8px;
+  --fg-radius-sm: 14px;
+  --fg-radius-md: 20px;
+  --fg-radius-lg: 28px;
+  --fg-radius-xl: 38px;
+  --fg-radius-pill: 9999px;
+
+  /* Dynamic Island & Liquid Glass Spring Physics */
+  --fg-spring-glide: 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --fg-spring-press: 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+  --fg-spring-pop: 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --fg-ease-fluid: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   2. Global Canvas & Liquid Ambient Background
+   ========================================================================== */
+
+.soft-edge-container {
+  --fade-size: 2rem;
+
+  /* background: #181a22; */
+
+  /* Fade edges into transparency */
+  -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black var(--fade-size),
+      black calc(100% - var(--fade-size)),
+      transparent
+    ),
+    linear-gradient(
+      to bottom,
+      transparent,
+      black var(--fade-size),
+      black calc(100% - var(--fade-size)),
+      transparent
+    ),
+    radial-gradient(
+      ellipse at center,
+      black calc(100% - var(--fade-size)),
+      transparent 100%
+    );
+
+  -webkit-mask-composite: source-in;
+
+  mask-image: linear-gradient(
+      to right,
+      transparent,
+      black var(--fade-size),
+      black calc(100% - var(--fade-size)),
+      transparent
+    ),
+    linear-gradient(
+      to bottom,
+      transparent,
+      black var(--fade-size),
+      black calc(100% - var(--fade-size)),
+      transparent
+    ),
+    radial-gradient(
+      ellipse at center,
+      black calc(100% - var(--fade-size)),
+      transparent 100%
+    );
+
+  mask-composite: intersect;
+}
+.soft-edge-container::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -20px;
+
+  background: rgba(24, 26, 34, 0.8);
+
+  filter: blur(20px);
+  opacity: 0.7;
+
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 60%,
+    transparent 100%
+  );
+
+  mask-image: radial-gradient(
+    ellipse at center,
+    black 60%,
+    transparent 100%
+  );
+
+  pointer-events: none;
+}
+.fg-canvas {
+  min-height: 100vh;
+  background-color: var(--fg-canvas-base);
+  background-image: 
+    radial-gradient(ellipse 60% 45% at 20% 15%, color-mix(in oklch, var(--fg-accent) 22%, transparent), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 85% 25%, color-mix(in oklch, var(--fg-violet) 20%, transparent), transparent 75%),
+    radial-gradient(ellipse 65% 55% at 50% 85%, color-mix(in oklch, var(--fg-primary) 22%, transparent), transparent 75%),
+    linear-gradient(160deg, color-mix(in oklch, var(--fg-canvas-base) 90%, black) 0%, var(--fg-canvas-base) 50%, color-mix(in oklch, var(--fg-canvas-base) 85%, black) 100%);
+  background-attachment: fixed;
+  color: var(--fg-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Fluid floating luminous orbs in background */
+.fg-ambient-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  z-index: 0;
+  opacity: 0.6;
+  animation: fg-orb-float 16s ease-in-out infinite alternate;
+}
+
+.fg-ambient-orb--cyan {
+  width: 450px;
+  height: 450px;
+  background: var(--fg-accent);
+  top: -80px;
+  left: 10%;
+}
+
+.fg-ambient-orb--violet {
+  width: 550px;
+  height: 550px;
+  background: var(--fg-violet);
+  bottom: 5%;
+  right: 5%;
+  animation-duration: 22s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes fg-orb-float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.08); }
+  100% { transform: translate(-30px, 40px) scale(0.92); }
+}
+
+/* ==========================================================================
+   3. Glass Containers & Structural Cards
+   ========================================================================== */
+/* Base Glass Container */
+.fg-glass-pane {
+  position: relative;
+  backdrop-filter: blur(var(--fg-blur-md));
+  -webkit-backdrop-filter: blur(var(--fg-blur-md));
+  border-radius: var(--fg-radius-lg);
+  box-sizing: border-box;
+}
+
+/* Obsidian Dark Glass Card */
+.fg-card {
+  position: relative;
+  background: var(--fg-glass-dark-bg);
+  border: 1px solid var(--fg-glass-dark-border);
+  border-radius: var(--fg-radius-xl);
+  box-shadow: var(--fg-glass-dark-shadow);
+  backdrop-filter: blur(var(--fg-blur-md));
+  -webkit-backdrop-filter: blur(var(--fg-blur-md));
+  padding: 28px;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: transform var(--fg-ease-fluid), border-color var(--fg-ease-fluid), box-shadow var(--fg-ease-fluid);
+  z-index: 1;
+}
+
+/* Specular Hairline Highlight Along Top Edge */
+.fg-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--fg-glass-dark-highlight) 35%,
+    var(--fg-glass-dark-highlight) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Liquid Subtle Prismatic Sheen */
+.fg-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 20% 0%,
+    color-mix(in oklch, white 6%, transparent),
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.fg-card--interactive:hover {
+  transform: translateY(-4px);
+  border-color: var(--fg-glass-dark-border-hover);
+  box-shadow: 
+    0 32px 75px -10px rgba(0, 0, 0, 0.65),
+    0 0 30px var(--fg-glow-cyan-dim),
+    inset 0 1px 1px color-mix(in oklch, white 35%, transparent);
+}
+
+/* Luminous Milky Opaline Glass Card (Bottom Sheet & Clean Sheet Style) */
+.fg-card--light {
+  background: var(--fg-glass-light-bg);
+  border: 1px solid var(--fg-glass-light-border);
+  color: var(--fg-glass-light-text);
+  box-shadow: var(--fg-glass-light-shadow);
+  backdrop-filter: blur(var(--fg-blur-xl));
+  -webkit-backdrop-filter: blur(var(--fg-blur-xl));
+}
+
+.fg-card--light::before {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.95) 40%, rgba(255, 255, 255, 0.95) 60%, transparent 100%);
+}
+
+.fg-card--light::after {
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.55), transparent 60%);
+}
+
+/* Card Typography */
+.fg-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+.fg-card__title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--fg-text-primary);
+}
+
+.fg-card--light .fg-card__title {
+  color: var(--fg-glass-light-text);
+}
+
+.fg-card__subtitle {
+  font-size: var(--size-md);
+  color: var(--fg-text-secondary);
+  margin-top: 4px;
+}
+
+.fg-card--light .fg-card__subtitle {
+  color: var(--fg-glass-light-muted);
+}
+
+/* Card Header Drag Handle Pill (Dynamic Island Sheet Puller) */
+.fg-sheet-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: var(--fg-radius-pill);
+  background: color-mix(in oklch, var(--fg-glass-light-text) 22%, transparent);
+  margin: -10px auto 18px auto;
+  transition: background var(--fg-ease-fluid), transform var(--fg-ease-fluid);
+  cursor: grab;
+}
+
+.fg-sheet-handle:hover {
+  background: color-mix(in oklch, var(--fg-glass-light-text) 35%, transparent);
+  transform: scaleX(1.1);
+}
+
+/* ==========================================================================
+   4. Hero Diorama Island Card (From Reference Image Centerpiece)
+   ========================================================================== */
+.fg-diorama {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 290px;
+  border-radius: var(--fg-radius-xl);
+  background: radial-gradient(circle at 50% 30%, color-mix(in oklch, var(--fg-primary) 30%, rgba(20, 28, 55, 0.6)), rgba(10, 14, 28, 0.85) 80%);
+  border: 1px solid color-mix(in oklch, var(--fg-accent) 25%, rgba(255, 255, 255, 0.15));
+  box-shadow: 
+    inset 0 0 60px color-mix(in oklch, var(--fg-accent) 10%, transparent),
+    0 24px 60px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.fg-diorama__neon-ring {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 46px;
+  border: 2px solid var(--fg-accent);
+  box-shadow: 
+    0 0 35px var(--fg-glow-cyan),
+    inset 0 0 25px var(--fg-glow-cyan-dim);
+  transform: rotateX(60deg) rotateZ(-45deg);
+  pointer-events: none;
+  animation: fg-ring-pulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes fg-ring-pulse {
+  0% {
+    box-shadow: 0 0 25px var(--fg-glow-cyan), inset 0 0 15px var(--fg-glow-cyan-dim);
+    border-color: var(--fg-accent);
+  }
+  100% {
+    box-shadow: 0 0 45px var(--fg-accent), inset 0 0 35px var(--fg-glow-cyan);
+    border-color: #ffffff;
+  }
+}
+
+.fg-diorama__stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fg-diorama__pedestal {
+  width: 175px;
+  height: 110px;
+  background: linear-gradient(135deg, rgba(240, 245, 255, 0.95), rgba(190, 205, 245, 0.8));
+  border-radius: 30px;
+  box-shadow: 
+    0 24px 45px rgba(0, 0, 0, 0.65),
+    0 0 32px var(--fg-glow-cyan-dim),
+    inset 0 2px 4px #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: perspective(600px) rotateX(25deg);
+  transition: transform var(--fg-spring-glide);
+}
+
+.fg-diorama:hover .fg-diorama__pedestal {
+  transform: perspective(600px) rotateX(15deg) translateY(-8px);
+}
+
+.fg-diorama__model {
+  font-size: 58px;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.55));
+  transform: translateY(-8px);
+  animation: fg-levitate 4s ease-in-out infinite alternate;
+}
+
+@keyframes fg-levitate {
+  0% { transform: translateY(-6px) scale(1); }
+  100% { transform: translateY(-16px) scale(1.03); }
+}
+
+.fg-diorama__temp-tag {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 3;
+}
+
+.fg-diorama__temp-val {
+  font-size: 50px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--fg-text-primary);
+  text-shadow: 0 0 24px color-mix(in oklch, var(--fg-accent) 40%, transparent);
+}
+
+.fg-diorama__temp-unit {
+  font-size: 26px;
+  vertical-align: top;
+  color: var(--fg-accent);
+}
+
+/* ==========================================================================
+   5. Reusable Form Components
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   5.1 Input Fields (Textbox, Searchbox, Textarea)
+   -------------------------------------------------------------------------- */
+.fg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.fg-label {
+  font-size: var(--size-md);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--fg-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fg-card--light .fg-label {
+  color: var(--fg-glass-light-text);
+}
+
+.fg-label__hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--fg-text-muted);
+}
+
+.fg-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.fg-input-wrap__icon {
+  position: absolute;
+  left: 16px;
+  font-size: 16px;
+  color: var(--fg-accent);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--fg-ease-fluid), transform var(--fg-ease-fluid);
+}
+
+.fg-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--fg-text-primary);
+  background: color-mix(in oklch, var(--fg-primary) 10%, rgba(14, 20, 42, 0.55));
+  border: 1px solid var(--fg-glass-dark-border);
+  border-radius: var(--fg-radius-sm);
+  padding: var(--size-sm) var(--size-md);
+  outline: none;
+  backdrop-filter: blur(var(--fg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--fg-blur-sm));
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.35),
+    0 1px 0 color-mix(in oklch, white 15%, transparent);
+  transition: 
+    border-color var(--fg-ease-fluid),
+    background var(--fg-ease-fluid),
+    box-shadow var(--fg-ease-fluid),
+    transform var(--fg-ease-fluid);
+}
+
+.fg-input-wrap--has-icon .fg-input {
+  padding-left: 46px;
+}
+
+.fg-input::placeholder {
+  color: var(--fg-text-muted);
+}
+
+.fg-input:hover {
+  border-color: color-mix(in oklch, var(--fg-accent) 40%, var(--fg-glass-dark-border));
+}
+
+.fg-input:focus {
+  border-color: var(--fg-accent);
+  background: color-mix(in oklch, var(--fg-primary) 18%, rgba(20, 28, 60, 0.75));
+  box-shadow: 
+    0 0 0 3px color-mix(in oklch, var(--fg-accent) 25%, transparent),
+    0 0 24px color-mix(in oklch, var(--fg-accent) 18%, transparent),
+    inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.fg-input-wrap:focus-within .fg-input-wrap__icon {
+  color: #ffffff;
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 8px var(--fg-accent));
+}
+
+/* Capsule / Pill Input Variant (Dynamic Island Search) */
+.fg-input--pill {
+  border-radius: var(--fg-radius-pill);
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.fg-input-wrap--has-icon .fg-input--pill {
+  padding-left: 48px;
+}
+
+/* Light Card Context Input */
+.fg-card--light .fg-input {
+  background: color-mix(in oklch, white 85%, var(--fg-surface-light-base) 15%);
+  border-color: color-mix(in oklch, var(--fg-primary) 20%, rgba(180, 195, 230, 0.6));
+  color: var(--fg-glass-light-text);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.fg-card--light .fg-input:focus {
+  background: #ffffff;
+  border-color: var(--fg-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--fg-primary) 25%, transparent);
+}
+
+.fg-textarea {
+  min-height: 105px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   5.2 Dropdown / Select (Native & Custom Dynamic Island Glass Popover)
+   -------------------------------------------------------------------------- */
+/* Custom Liquid Glass Dropdown */
+.fg-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.fg-dropdown__trigger {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--size-sm) var(--size-md);
+  border-radius: var(--fg-radius-sm);
+  background: color-mix(in oklch, var(--fg-primary) 10%, rgba(14, 20, 42, 0.55));
+  border: 1px solid var(--fg-glass-dark-border);
+  color: var(--fg-text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  backdrop-filter: blur(var(--fg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--fg-blur-sm));
+  transition: all var(--fg-ease-fluid);
+  user-select: none;
+}
+
+.fg-dropdown__trigger:hover {
+  border-color: var(--fg-glass-dark-border-hover);
+  background: color-mix(in oklch, var(--fg-primary) 16%, rgba(20, 28, 55, 0.65));
+}
+
+.fg-dropdown--open .fg-dropdown__trigger {
+  border-color: var(--fg-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--fg-accent) 22%, transparent);
+}
+
+.fg-dropdown__icon {
+  margin-right: 10px;
+  color: var(--fg-accent);
+  display: flex;
+  align-items: center;
+}
+
+.fg-dropdown__chevron {
+  color: var(--fg-accent);
+  font-size: 12px;
+  transition: transform var(--fg-spring-glide);
+}
+
+.fg-dropdown--open .fg-dropdown__chevron {
+  transform: rotate(180deg);
+}
+
+/* Dynamic Island Liquid Popover Menu */
+.fg-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: color-mix(in oklch, var(--fg-canvas-base) 88%, rgba(15, 22, 45, 0.95));
+  border: 1px solid color-mix(in oklch, var(--fg-accent) 30%, rgba(255, 255, 255, 0.18));
+  border-radius: var(--fg-radius-md);
+  padding: 8px;
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 30px color-mix(in oklch, var(--fg-accent) 15%, transparent),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(var(--fg-blur-xl));
+  -webkit-backdrop-filter: blur(var(--fg-blur-xl));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.96);
+  transition: opacity var(--fg-spring-pop), transform var(--fg-spring-pop), visibility var(--fg-spring-pop);
+}
+
+.fg-dropdown--open .fg-dropdown__menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.fg-dropdown__item {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--fg-radius-xs);
+  background: transparent;
+  border: none;
+  color: var(--fg-text-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--fg-ease-fluid);
+}
+
+.fg-dropdown__item:hover {
+  background: color-mix(in oklch, var(--fg-primary) 35%, rgba(255, 255, 255, 0.08));
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+.fg-dropdown__item--selected {
+  background: color-mix(in oklch, var(--fg-accent) 22%, rgba(255, 255, 255, 0.08));
+  color: var(--fg-accent);
+  font-weight: 600;
+}
+
+/* Native Select Support */
+.fg-select-native {
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--fg-text-primary);
+  background: color-mix(in oklch, var(--fg-primary) 10%, rgba(14, 20, 42, 0.55));
+  border: 1px solid var(--fg-glass-dark-border);
+  border-radius: var(--fg-radius-sm);
+  padding: 13px 42px 13px 18px;
+  outline: none;
+  backdrop-filter: blur(var(--fg-blur-sm));
+  transition: all var(--fg-ease-fluid);
+}
+
+.fg-select-native:focus {
+  border-color: var(--fg-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--fg-accent) 22%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   5.3 Glass Checkbox
+   -------------------------------------------------------------------------- */
+.fg-checkbox-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 12px;
+}
+
+.fg-checkbox-wrap input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.fg-checkbox {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--fg-primary) 15%, rgba(20, 28, 55, 0.6));
+  border: 1.5px solid var(--fg-glass-dark-border);
+  backdrop-filter: blur(var(--fg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--fg-blur-sm));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: all var(--fg-spring-pop);
+  flex-shrink: 0;
+}
+
+.fg-checkbox::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), transparent);
+  pointer-events: none;
+}
+
+.fg-checkbox__icon {
+  width: 14px;
+  height: 14px;
+  stroke: #ffffff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: 0;
+  transform: scale(0.4) rotate(-15deg);
+  transition: all var(--fg-spring-glide);
+}
+
+.fg-checkbox-wrap:hover .fg-checkbox {
+  border-color: var(--fg-glass-dark-border-hover);
+  transform: scale(1.05);
+}
+
+.fg-checkbox-wrap input[type="checkbox"]:checked + .fg-checkbox {
+  background: linear-gradient(135deg, var(--fg-accent) 0%, var(--fg-primary) 100%);
+  border-color: color-mix(in oklch, white 40%, var(--fg-accent));
+  box-shadow: 
+    0 0 18px var(--fg-glow-cyan),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+.fg-checkbox-wrap input[type="checkbox"]:checked + .fg-checkbox .fg-checkbox__icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.fg-checkbox-label {
+  font-size: 14px;
+  color: var(--fg-text-primary);
+  line-height: 1.4;
+}
+
+.fg-card--light .fg-checkbox {
+  background: color-mix(in oklch, white 85%, var(--fg-surface-light-base) 15%);
+  border-color: rgba(180, 195, 230, 0.7);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.fg-card--light .fg-checkbox-label {
+  color: var(--fg-glass-light-text);
+}
+
+/* --------------------------------------------------------------------------
+   5.4 Liquid Glass Toggle Switch (iOS / Dynamic Island Pill)
+   -------------------------------------------------------------------------- */
+.fg-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: var(--fg-radius-md);
+  background: color-mix(in oklch, white 4%, rgba(255, 255, 255, 0.02));
+  border: 1px solid color-mix(in oklch, white 10%, transparent);
+  transition: all var(--fg-ease-fluid);
+}
+
+.fg-toggle-row:hover {
+  background: color-mix(in oklch, white 8%, rgba(255, 255, 255, 0.04));
+  border-color: color-mix(in oklch, var(--fg-accent) 25%, transparent);
+}
+
+.fg-card--light .fg-toggle-row {
+  background: var(--fg-glass-light-item-bg);
+  border-color: var(--fg-glass-light-item-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.fg-toggle-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.fg-toggle-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-text-primary);
+}
+
+.fg-card--light .fg-toggle-title {
+  color: var(--fg-glass-light-text);
+}
+
+.fg-toggle-subtitle {
+  font-size: 12px;
+  color: var(--fg-text-secondary);
+  margin-top: 2px;
+}
+
+.fg-card--light .fg-toggle-subtitle {
+  color: var(--fg-glass-light-muted);
+}
+
+/* Dynamic Switch Track & Thumb */
+.fg-toggle {
+  position: relative;
+  display: inline-block;
+  width: 58px;
+  height: 32px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.fg-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.fg-toggle__track {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklch, var(--fg-primary) 20%, rgba(20, 26, 50, 0.7));
+  border: 1px solid var(--fg-glass-dark-border);
+  border-radius: var(--fg-radius-pill);
+  backdrop-filter: blur(var(--fg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--fg-blur-sm));
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45);
+  transition: all var(--fg-spring-glide);
+}
+
+/* Frosted glass specular top light on track */
+.fg-toggle__track::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 6px;
+  right: 6px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+}
+
+.fg-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(200, 215, 245, 0.85));
+  border-radius: 50%;
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px #ffffff;
+  transition: transform var(--fg-spring-glide), width var(--fg-spring-press), background var(--fg-ease-fluid), box-shadow var(--fg-ease-fluid);
+}
+
+/* Liquid spring stretch effect while interacting/active */
+.fg-toggle:active .fg-toggle__thumb {
+  width: 29px;
+}
+
+/* Checked / ON State */
+.fg-toggle input:checked + .fg-toggle__track {
+  background: linear-gradient(135deg, color-mix(in oklch, var(--fg-accent) 45%, var(--fg-primary) 55%), var(--fg-primary));
+  border-color: color-mix(in oklch, white 35%, var(--fg-accent));
+  box-shadow: 
+    0 0 22px var(--fg-glow-cyan-dim),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+}
+
+.fg-toggle input:checked + .fg-toggle__track .fg-toggle__thumb {
+  transform: translateX(26px);
+  background: #ffffff;
+  box-shadow: 
+    0 3px 12px rgba(0, 0, 0, 0.35),
+    0 0 12px var(--fg-glow-cyan),
+    inset 0 1px 1px #ffffff;
+}
+
+/* Light Card Mode Switch Variant */
+.fg-card--light .fg-toggle__track {
+  background: color-mix(in oklch, var(--fg-surface-light-base) 80%, rgba(180, 195, 230, 0.5));
+  border-color: rgba(180, 195, 230, 0.7);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fg-card--light .fg-toggle input:checked + .fg-toggle__track {
+  background: linear-gradient(135deg, var(--fg-primary), color-mix(in oklch, var(--fg-primary) 80%, var(--fg-accent)));
+}
+
+/* --------------------------------------------------------------------------
+   5.5 Segmented Switch (Dynamic Island Pill Segmented Control)
+   -------------------------------------------------------------------------- */
+.fg-segmented {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--fg-radius-pill);
+  background: color-mix(in oklch, var(--fg-primary) 12%, rgba(15, 20, 42, 0.6));
+  border: 1px solid var(--fg-glass-dark-border);
+  backdrop-filter: blur(var(--fg-blur-md));
+  -webkit-backdrop-filter: blur(var(--fg-blur-md));
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Sliding Liquid Dynamic Island Capsule Indicator */
+.fg-segmented__indicator {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: calc(100% - 8px);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--fg-accent) 25%, rgba(255, 255, 255, 0.18)) 0%,
+    color-mix(in oklch, var(--fg-primary) 35%, rgba(255, 255, 255, 0.08)) 100%
+  );
+  border: 1px solid color-mix(in oklch, white 35%, var(--fg-accent) 25%);
+  border-radius: var(--fg-radius-pill);
+  box-shadow: 
+    0 6px 18px rgba(0, 0, 0, 0.35),
+    0 0 20px var(--fg-glow-cyan-dim),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  transition: transform var(--fg-spring-glide), width var(--fg-spring-glide);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fg-segmented__item {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  padding: var(--size-sm) var(--size-md);
+  font-size: var(--size-md);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--fg-text-secondary);
+  border-radius: var(--fg-radius-pill);
+  cursor: pointer;
+  z-index: 2;
+  transition: color var(--fg-ease-fluid), transform var(--fg-spring-press);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fg-segmented__item:hover {
+  color: var(--fg-text-primary);
+}
+
+.fg-segmented__item--active {
+  color: #ffffff;
+  text-shadow: 0 0 12px var(--fg-glow-cyan);
+}
+
+/* Light Card Variant Segmented Control */
+.fg-card--light .fg-segmented {
+  background: color-mix(in oklch, var(--fg-surface-light-base) 80%, rgba(200, 215, 245, 0.4));
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.fg-card--light .fg-segmented__indicator {
+  background: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.fg-card--light .fg-segmented__item {
+  color: var(--fg-glass-light-muted);
+}
+
+.fg-card--light .fg-segmented__item--active {
+  color: var(--fg-glass-light-text);
+  text-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   5.6 Buttons (Default, Hover, Pressed, Active States & Circular Matrix)
+   -------------------------------------------------------------------------- */
+.fg-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 26px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: var(--fg-radius-pill);
+  cursor: pointer;
+  outline: none;
+  border: 1px solid transparent;
+  user-select: none;
+  backdrop-filter: blur(var(--fg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--fg-blur-sm));
+  overflow: hidden;
+  transition: 
+    transform var(--fg-spring-press),
+    box-shadow var(--fg-ease-fluid),
+    background var(--fg-ease-fluid),
+    border-color var(--fg-ease-fluid),
+    color var(--fg-ease-fluid);
+}
+
+/* Specular reflection gradient across button crown */
+.fg-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 100%);
+  border-radius: var(--fg-radius-pill) var(--fg-radius-pill) 0 0;
+  pointer-events: none;
+}
+
+/* Primary Glass Button (Glowing Ice Cyan / Indigo) */
+.fg-btn--primary {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--fg-accent) 65%, var(--fg-primary) 35%) 0%,
+    color-mix(in oklch, var(--fg-primary) 85%, var(--fg-canvas-base) 15%) 100%
+  );
+  border-color: color-mix(in oklch, white 55%, var(--fg-accent) 45%);
+  color: #ffffff;
+  box-shadow: 
+    0 12px 28px -6px color-mix(in oklch, var(--fg-primary) 65%, transparent),
+    0 0 24px var(--fg-glow-cyan-dim),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.fg-btn--primary:hover {
+  transform: translateY(-2px);
+  border-color: #ffffff;
+  box-shadow: 
+    0 18px 36px -6px color-mix(in oklch, var(--fg-primary) 80%, transparent),
+    0 0 32px var(--fg-glow-cyan),
+    inset 0 1px 2px #ffffff;
+}
+
+/* Physical Liquid Glass Pressed State */
+.fg-btn:active,
+.fg-btn--pressed {
+  transform: scale(0.96) translateY(2px) !important;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 3px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
+.fg-btn--primary:active,
+.fg-btn--primary.fg-btn--pressed {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--fg-accent) 50%, var(--fg-primary) 50%) 0%,
+    color-mix(in oklch, var(--fg-primary) 95%, black 5%) 100%
+  );
+}
+
+/* Secondary Frosted Glass Button */
+.fg-btn--secondary {
+  background: var(--fg-pill-bg);
+  border-color: var(--fg-pill-border);
+  color: var(--fg-text-primary);
+  box-shadow: 
+    0 8px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.fg-btn--secondary:hover {
+  transform: translateY(-2px);
+  background: var(--fg-pill-hover);
+  border-color: color-mix(in oklch, white 40%, var(--fg-accent) 20%);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* Ghost Glass Button */
+.fg-btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--fg-text-secondary);
+}
+
+.fg-btn--ghost:hover {
+  background: color-mix(in oklch, white 8%, transparent);
+  color: var(--fg-text-primary);
+  border-color: color-mix(in oklch, white 15%, transparent);
+}
+
+/* Circular Matrix Action Buttons (12-Button Smart Grid from Reference) */
+.fg-circle-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.fg-circle-btn {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--fg-primary) 16%, rgba(25, 34, 65, 0.6));
+  border: 1px solid var(--fg-pill-border);
+  color: var(--fg-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  outline: none;
+  backdrop-filter: blur(var(--fg-blur-sm));
+  -webkit-backdrop-filter: blur(var(--fg-blur-sm));
+  box-shadow: 
+    0 10px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.22);
+  transition: all var(--fg-spring-glide);
+}
+
+.fg-circle-btn:hover {
+  transform: translateY(-4px) scale(1.06);
+  background: color-mix(in oklch, var(--fg-primary) 28%, rgba(35, 48, 92, 0.75));
+  border-color: color-mix(in oklch, white 45%, var(--fg-accent) 30%);
+  color: #ffffff;
+  box-shadow: 
+    0 16px 32px rgba(0, 0, 0, 0.45),
+    0 0 20px var(--fg-glow-cyan-dim),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.fg-circle-btn:active,
+.fg-circle-btn--pressed {
+  transform: scale(0.92) translateY(2px) !important;
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.5),
+    inset 0 3px 6px rgba(0, 0, 0, 0.45) !important;
+}
+
+.fg-circle-btn--active {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--fg-accent) 35%, var(--fg-primary) 65%) 0%,
+    color-mix(in oklch, var(--fg-primary) 80%, black 20%) 100%
+  );
+  border-color: var(--fg-accent);
+  color: var(--fg-accent);
+  box-shadow: 
+    0 0 26px var(--fg-glow-cyan),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.fg-circle-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--fg-accent);
+  color: var(--fg-text-inverse);
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 14px var(--fg-accent);
+}
+
+/* --------------------------------------------------------------------------
+   5.7 Opaline Milky Glass List Items (Reference Image Schedule Card)
+   -------------------------------------------------------------------------- */
+.fg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fg-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--fg-radius-md);
+  background: color-mix(in oklch, white 6%, rgba(255, 255, 255, 0.03));
+  border: 1px solid color-mix(in oklch, white 12%, transparent);
+  backdrop-filter: blur(var(--fg-blur-sm));
+  transition: all var(--fg-ease-fluid);
+}
+
+.fg-list-item:hover {
+  background: color-mix(in oklch, white 10%, rgba(255, 255, 255, 0.05));
+  border-color: color-mix(in oklch, var(--fg-accent) 35%, transparent);
+  transform: translateX(4px);
+}
+
+.fg-card--light .fg-list-item {
+  background: var(--fg-glass-light-item-bg);
+  border: 1px solid var(--fg-glass-light-item-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.fg-card--light .fg-list-item:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.fg-list-item__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fg-list-item__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--fg-primary) 20%, rgba(255, 255, 255, 0.06));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--fg-accent);
+  flex-shrink: 0;
+}
+
+.fg-card--light .fg-list-item__icon {
+  background: color-mix(in oklch, var(--fg-primary) 12%, rgba(0, 0, 0, 0.05));
+  color: var(--fg-primary);
+}
+
+.fg-list-item__title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: inherit;
+}
+
+.fg-list-item__subtitle {
+  font-size: 12px;
+  color: var(--fg-text-secondary);
+  margin-top: 3px;
+}
+
+.fg-card--light .fg-list-item__subtitle {
+  color: var(--fg-glass-light-muted);
+}
+
+.fg-list-item__action {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--fg-text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all var(--fg-ease-fluid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fg-list-item__action:hover {
+  background: color-mix(in oklch, white 15%, transparent);
+  color: var(--fg-text-primary);
+  transform: scale(1.1);
+}
+
+/* ==========================================================================
+   6. Live Palette Tuner Controls (Minimalist Root Color Recalculation Demo)
+   ========================================================================== */
+.fg-palette-tuner {
+  position: relative;
+  background: color-mix(in oklch, var(--fg-canvas-base) 80%, rgba(20, 26, 52, 0.8));
+  border: 1px solid var(--fg-glass-dark-border);
+  border-radius: var(--fg-radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 36px;
+  box-shadow: var(--fg-glass-dark-shadow);
+  backdrop-filter: blur(var(--fg-blur-lg));
+}
+
+.fg-tuner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: center;
+}
+
+.fg-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fg-slider-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-text-secondary);
+}
+
+.fg-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--fg-radius-pill);
+  background: color-mix(in oklch, white 15%, transparent);
+  outline: none;
+}
+
+.fg-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--fg-accent);
+  cursor: pointer;
+  box-shadow: 0 0 12px var(--fg-accent);
+  transition: transform var(--fg-spring-press);
+}
+
+.fg-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ==========================================================================
+   7. Responsive Grid Layouts
+   ========================================================================== */
+.fg-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px 24px 80px 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.fg-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 28px;
+  margin-bottom: 36px;
+}
+
+.fg-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+@media (max-width: 768px) {
+  .fg-container {
+    padding: 20px 16px 60px 16px;
+  }
+  .fg-grid-2col,
+  .fg-grid-3col {
+    grid-template-columns: 1fr;
+  }
+  .fg-circle-grid {
+    gap: 10px;
+  }
+}

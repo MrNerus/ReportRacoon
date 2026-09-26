@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Futuristic Glassmorphic Component Design System</title>
+  <link rel="stylesheet" href="futuristic-glass.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    code, pre {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Section Headings & Badges */
+    .fg-section-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px 0;
+      background: linear-gradient(135deg, #ffffff 30%, var(--fg-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .fg-section-desc {
+      font-size: 14px;
+      color: var(--fg-text-secondary);
+      margin: 0 0 28px 0;
+      max-width: 680px;
+      line-height: 1.6;
+    }
+    .fg-badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: var(--fg-radius-pill);
+      background: color-mix(in oklch, var(--fg-accent) 15%, transparent);
+      border: 1px solid color-mix(in oklch, var(--fg-accent) 35%, transparent);
+      color: var(--fg-accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .fg-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--fg-accent);
+      box-shadow: 0 0 8px var(--fg-accent);
+      animation: fg-pulse-dot 2s infinite ease-in-out;
+    }
+    @keyframes fg-pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.5; }
+    }
+    /* Mobile Device Frame Simulation (Matching Reference Image) */
+    .fg-phone-frame {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      border-radius: 46px;
+      background: rgba(10, 14, 26, 0.7);
+      border: 3px solid color-mix(in oklch, white 20%, var(--fg-accent) 10%);
+      box-shadow: 
+        0 35px 80px -15px rgba(0, 0, 0, 0.8),
+        0 0 35px color-mix(in oklch, var(--fg-primary) 25%, transparent),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      padding: 16px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+    }
+    /* Dynamic Island Notch */
+    .fg-phone-notch {
+      width: 110px;
+      height: 26px;
+      background: #000000;
+      border-radius: var(--fg-radius-pill);
+      margin: 4px auto 18px auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      transition: width var(--fg-spring-glide);
+    }
+    .fg-phone-notch:hover {
+      width: 140px;
+    }
+    .fg-notch-cam {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #111a2e;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .fg-notch-sensor {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #0a1120;
+    }
+    /* Code preview drawer for Angular */
+    .fg-code-box {
+      background: rgba(5, 8, 18, 0.85);
+      border: 1px solid var(--fg-glass-dark-border);
+      border-radius: var(--fg-radius-md);
+      padding: 18px;
+      overflow-x: auto;
+      font-size: var(--size-md);
+      color: #b8c7eb;
+      line-height: 1.55;
+      margin-top: 16px;
+    }
+    .fg-tab-code-btn {
+      padding: 6px 14px;
+      border-radius: var(--fg-radius-pill);
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--fg-text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all var(--fg-ease-fluid);
+    }
+    .fg-tab-code-btn.active {
+      background: color-mix(in oklch, var(--fg-accent) 20%, transparent);
+      border-color: color-mix(in oklch, var(--fg-accent) 40%, transparent);
+      color: var(--fg-accent);
+    }
+  </style>
+</head>
+<body class="fg-canvas">
+
+  <!-- Ambient Floating Orbs for Chromatic Depth -->
+  <div class="fg-ambient-orb fg-ambient-orb--cyan"></div>
+  <div class="fg-ambient-orb fg-ambient-orb--violet"></div>
+
+  <div class="fg-container">
+
+    <!-- ====================================================================
+         1. Header & Live Color-Engine Tuner
+         ==================================================================== -->
+    <header style="text-align: center; margin-bottom: 42px;">
+      <div class="fg-badge-chip">
+        <span class="fg-badge-dot"></span>
+        Liquid Glass Design System • OKLCH Color Engine
+      </div>
+      <h1 style="font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -0.035em; margin: 0 0 14px 0;">
+        Futuristic Glassmorphic UI
+      </h1>
+      <p style="font-size: 16px; color: var(--fg-text-secondary); max-width: 720px; margin: 0 auto 28px auto; line-height: 1.6;">
+        Pixel-accurate implementation inspired by Midjourney & Figma smart home concepts. Built with minimal <code style="color: var(--fg-accent); font-weight: 600;">:root</code> master variables, OKLCH math, dynamic island fluid springs, and ready for Angular integration.
+      </p>
+
+      <!-- Live Palette Tuner: Demonstrates single-token shading calculation -->
+      <div class="fg-palette-tuner" style="max-width: 880px; margin: 0 auto; text-align: left;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <span>🎨 Live OKLCH Engine Tuner</span>
+              <span style="font-size: 11px; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--fg-accent); font-weight: 500;">
+                Recalculates all tints, borders & glows
+              </span>
+            </div>
+            <div style="font-size: 12px; color: var(--fg-text-secondary); margin-top: 2px;">
+              Tweak these 2 master hues to re-theme the entire dark obsidian, opaline milk, and glass components simultaneously!
+            </div>
+          </div>
+          <button id="btnResetTheme" class="fg-btn fg-btn--ghost" style="padding: 6px 14px; font-size: 12px;">
+            ↺ Reset Defaults
+          </button>
+        </div>
+
+        <div class="fg-tuner-grid">
+          <!-- Primary Brand Hue Slider -->
+          <div class="fg-slider-wrap">
+            <div class="fg-slider-meta">
+              <span>Primary Hue (<span id="valPrimaryHue">232</span>°)</span>
+              <span id="previewPrimary" style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--fg-primary); box-shadow: 0 0 8px var(--fg-primary);"></span>
+            </div>
+            <input type="range" id="sliderPrimaryHue" class="fg-slider" min="0" max="360" value="232" />
+          </div>
+
+          <!-- Accent Glow Hue Slider -->
+          <div class="fg-slider-wrap">
+            <div class="fg-slider-meta">
+              <span>Accent Glow (<span id="valAccentHue">196</span>°)</span>
+              <span id="previewAccent" style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--fg-accent); box-shadow: 0 0 8px var(--fg-accent);"></span>
+            </div>
+            <input type="range" id="sliderAccentHue" class="fg-slider" min="0" max="360" value="196" />
+          </div>
+
+          <!-- Secondary Violet Hue Slider -->
+          <div class="fg-slider-wrap">
+            <div class="fg-slider-meta">
+              <span>Ambient Violet (<span id="valSecondaryHue">285</span>°)</span>
+              <span id="previewSecondary" style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--fg-violet); box-shadow: 0 0 8px var(--fg-violet);"></span>
+            </div>
+            <input type="range" id="sliderSecondaryHue" class="fg-slider" min="0" max="360" value="285" />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         2. Reference Mockup Showcase (Exact Screen Recreation)
+         ==================================================================== -->
+    <div style="margin-bottom: 60px;">
+      <div class="fg-badge-chip">Reference Layout Reproduction</div>
+      <h2 class="fg-section-title">Smart Home Glass Dashboards</h2>
+      <p class="fg-section-desc">
+        Exact fidelity to the reference image: Isometric 3D diorama stage, midnight obsidian frosted glass, 12-button circular matrix grid, and luminous opaline milky glass bottom cards.
+      </p>
+
+      <div class="fg-grid-3col">
+
+        <!-- MOCKUP 1: Isometric Smart Home & Live Switches -->
+        <div class="fg-phone-frame">
+          <!-- Dynamic Island Notch -->
+          <div class="fg-phone-notch">
+            <div class="fg-notch-cam"></div>
+            <div class="fg-notch-sensor"></div>
+          </div>
+
+          <!-- Top Status Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: var(--size-md); font-weight: 700; margin-bottom: 16px; padding: 0 8px;">
+            <span>9:41</span>
+            <div style="display: flex; gap: 6px; font-size: 11px;">
+              <span>📶</span>
+              <span>⚡ 100%</span>
+            </div>
+          </div>
+
+          <!-- 3D Diorama Island Card -->
+          <div class="fg-diorama" style="margin-bottom: 20px;">
+            <div class="fg-diorama__neon-ring"></div>
+            <div class="fg-diorama__temp-tag">
+              <span class="fg-diorama__temp-val">25</span>
+              <span class="fg-diorama__temp-unit">°C</span>
+              <div style="font-size: 12px; color: var(--fg-text-secondary); margin-top: 4px;">Exterior Pod</div>
+            </div>
+            <div class="fg-diorama__stage">
+              <div class="fg-diorama__pedestal">
+                <div class="fg-diorama__model">🏡</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Island Segmented Mode Switch -->
+          <div style="margin-bottom: 20px;">
+            <div class="fg-segmented" id="segMockup1">
+              <div class="fg-segmented__indicator"></div>
+              <div class="fg-segmented__item fg-segmented__item--active" data-index="0">Eco Mode</div>
+              <div class="fg-segmented__item" data-index="1">Comfort</div>
+              <div class="fg-segmented__item" data-index="2">Away</div>
+            </div>
+          </div>
+
+          <!-- Interactive Glass Toggles -->
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="fg-toggle-row">
+              <div class="fg-toggle-label">
+                <span class="fg-toggle-title">Outdoor Lighting</span>
+                <span class="fg-toggle-subtitle">Perimeter Neons & Pathway</span>
+              </div>
+              <label class="fg-toggle">
+                <input type="checkbox" id="chkLight" checked />
+                <span class="fg-toggle__track">
+                  <span class="fg-toggle__thumb"></span>
+                </span>
+              </label>
+            </div>
+
+            <div class="fg-toggle-row">
+              <div class="fg-toggle-label">
+                <span class="fg-toggle-title">Security Cameras</span>
+                <span class="fg-toggle-subtitle">AI Motion Sensor Active</span>
+              </div>
+              <label class="fg-toggle">
+                <input type="checkbox" id="chkCamera" />
+                <span class="fg-toggle__track">
+                  <span class="fg-toggle__thumb"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOCKUP 2: Circular Matrix Control Pad (12-Button Grid) -->
+        <div class="fg-phone-frame">
+          <div class="fg-phone-notch">
+            <div class="fg-notch-cam"></div>
+            <div class="fg-notch-sensor"></div>
+          </div>
+
+          <!-- Header -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 0 4px;">
+            <button class="fg-btn fg-btn--ghost" style="padding: 8px; border-radius: 50%;">←</button>
+            <div style="font-size: 17px; font-weight: 700;">Home Control</div>
+            <button class="fg-circle-btn" style="width: 38px; height: 38px; font-size: 15px; position: relative;">
+              💡
+              <span class="fg-circle-badge" style="width: 16px; height: 16px; font-size: 9px; top: -3px; right: -3px;">1</span>
+            </button>
+          </div>
+
+          <!-- 12-Button Circular Matrix Grid -->
+          <div class="fg-circle-grid" id="circleGrid" style="margin-bottom: 24px;">
+            <!-- Row 1 -->
+            <button class="fg-circle-btn fg-circle-btn--active" title="Water Sprinkler">💧</button>
+            <button class="fg-circle-btn" title="Garden Fountain">⛲</button>
+            <button class="fg-circle-btn" title="Sun Roof">☀️</button>
+            <button class="fg-circle-btn" title="Climate Control">❄️</button>
+            <!-- Row 2 -->
+            <button class="fg-circle-btn" title="Thermostat">🌡️</button>
+            <button class="fg-circle-btn" title="Entertainment">▶️</button>
+            <button class="fg-circle-btn fg-circle-btn--active" title="Mesh Wi-Fi">📶</button>
+            <button class="fg-circle-btn" title="Smart Socket">🔌</button>
+            <!-- Row 3 -->
+            <button class="fg-circle-btn" title="Intercom">📞</button>
+            <button class="fg-circle-btn" title="Smart EV Garage">🚗</button>
+            <button class="fg-circle-btn" title="Security Sensor">🛡️</button>
+            <button class="fg-circle-btn" title="CCTV Camera">📹</button>
+          </div>
+
+          <!-- Inset Status Card -->
+          <div class="fg-card fg-card--compact" style="padding: 16px; border-radius: var(--fg-radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 14px; font-weight: 700;">Mesh Network</div>
+                <div style="font-size: 12px; color: var(--fg-text-secondary);">4.8 Gbps • Optical Link</div>
+              </div>
+              <span class="fg-badge-chip" style="margin: 0; padding: 4px 10px; font-size: 10px;">Active</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOCKUP 3: Luminous Opaline Milky Glass Bottom Sheet Card -->
+        <div class="fg-phone-frame">
+          <div class="fg-phone-notch">
+            <div class="fg-notch-cam"></div>
+            <div class="fg-notch-sensor"></div>
+          </div>
+
+          <!-- Ambient Mini Stage -->
+          <div style="text-align: center; padding: 18px 0;">
+            <div style="font-size: var(--size-md); color: var(--fg-text-secondary); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
+              Living Area
+            </div>
+            <div style="font-size: 38px; font-weight: 800; letter-spacing: -0.04em; margin-top: 4px;">
+              22.4°C
+            </div>
+          </div>
+
+          <!-- Signature Milky Opaline Glass Bottom Sheet Card -->
+          <div class="fg-card fg-card--light" style="border-radius: 36px 36px 28px 28px; padding: 22px 18px;">
+            <div class="fg-sheet-handle"></div>
+
+            <div class="fg-card__header" style="margin-bottom: 16px;">
+              <div>
+                <h3 class="fg-card__title" style="font-size: 17px;">Automations</h3>
+                <div class="fg-card__subtitle">Scheduled scenes</div>
+              </div>
+              <button class="fg-btn fg-btn--secondary" style="padding: 6px 12px; font-size: 12px; background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1); color: var(--fg-glass-light-text);">
+                + Add
+              </button>
+            </div>
+
+            <!-- Milky Glass List Items -->
+            <div class="fg-list">
+              <div class="fg-list-item">
+                <div class="fg-list-item__left">
+                  <div class="fg-list-item__icon">⏰</div>
+                  <div>
+                    <h4 class="fg-list-item__title">7:00pm, Daily</h4>
+                    <div class="fg-list-item__subtitle">3 scenes, 11 accessories</div>
+                  </div>
+                </div>
+                <button class="fg-list-item__action">•••</button>
+              </div>
+
+              <div class="fg-list-item">
+                <div class="fg-list-item__left">
+                  <div class="fg-list-item__icon">🌤️</div>
+                  <div>
+                    <h4 class="fg-list-item__title">1:00pm, Daily</h4>
+                    <div class="fg-list-item__subtitle">1 scene, 2 accessories</div>
+                  </div>
+                </div>
+                <button class="fg-list-item__action">•••</button>
+              </div>
+
+              <div class="fg-list-item">
+                <div class="fg-list-item__left">
+                  <div class="fg-list-item__icon">🌙</div>
+                  <div>
+                    <h4 class="fg-list-item__title">11:00pm, Daily</h4>
+                    <div class="fg-list-item__subtitle">Night lock, 8 accessories</div>
+                  </div>
+                </div>
+                <button class="fg-list-item__action">•••</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         3. Interactive Reusable Component Showcase
+         ==================================================================== -->
+    <div style="margin-bottom: 60px;">
+      <div class="fg-badge-chip">Standalone Components</div>
+      <h2 class="fg-section-title">Liquid Glass Interactive Library</h2>
+      <p class="fg-section-desc">
+        Complete suite of input fields, dropdowns, checkboxes, dynamic toggles, segmented controls, and button states. Ready for immediate Angular integration.
+      </p>
+
+      <div class="fg-grid-2col">
+
+        <!-- COMPONENT CARD 1: Inputs & Dropdown -->
+        <div class="fg-card fg-card--interactive">
+          <div class="fg-card__header">
+            <div>
+              <h3 class="fg-card__title">Input Fields & Glass Dropdown</h3>
+              <div class="fg-card__subtitle">Specular top reflection & glowing focus rings</div>
+            </div>
+            <span class="fg-badge-chip" style="margin: 0;">Form Controls</span>
+          </div>
+
+          <!-- Textbox with Icon -->
+          <div class="fg-field">
+            <label class="fg-label" for="txtPodName">
+              <span>Pod Identifier</span>
+              <span class="fg-label__hint">Required</span>
+            </label>
+            <div class="fg-input-wrap fg-input-wrap--has-icon">
+              <span class="fg-input-wrap__icon">⚡</span>
+              <input type="text" id="txtPodName" class="fg-input" placeholder="e.g. Nexus-Core-Alpha" value="Hyperion Solar Module 01" />
+            </div>
+          </div>
+
+          <!-- Dynamic Island Capsule Search Bar -->
+          <div class="fg-field">
+            <label class="fg-label" for="txtSearch">
+              <span>Capsule Search Bar</span>
+              <span class="fg-label__hint">Pill Radius</span>
+            </label>
+            <div class="fg-input-wrap fg-input-wrap--has-icon">
+              <span class="fg-input-wrap__icon">🔍</span>
+              <input type="text" id="txtSearch" class="fg-input fg-input--pill" placeholder="Search devices, routines, sensors..." />
+            </div>
+          </div>
+
+          <!-- Custom Dynamic Island Glass Dropdown -->
+          <div class="fg-field">
+            <label class="fg-label">
+              <span>Glass Dropdown (Dynamic Popover)</span>
+              <span class="fg-label__hint">Animated Spring</span>
+            </label>
+            <div class="fg-dropdown" id="demoDropdown">
+              <button class="fg-dropdown__trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span style="display: flex; align-items: center;">
+                  <span class="fg-dropdown__icon">🌐</span>
+                  <span id="demoDropdownValue">Sub-Orbital Mesh Link</span>
+                </span>
+                <span class="fg-dropdown__chevron">▼</span>
+              </button>
+              <div class="fg-dropdown__menu" role="listbox">
+                <button class="fg-dropdown__item fg-dropdown__item--selected" data-val="Sub-Orbital Mesh Link" type="button">
+                  <span>🛰️ Sub-Orbital Mesh Link</span>
+                  <span>✓</span>
+                </button>
+                <button class="fg-dropdown__item" data-val="Terrestrial Fiber Core" type="button">
+                  <span>⚡ Terrestrial Fiber Core</span>
+                  <span></span>
+                </button>
+                <button class="fg-dropdown__item" data-val="Quantum Encrypted Node" type="button">
+                  <span>🔐 Quantum Encrypted Node</span>
+                  <span></span>
+                </button>
+                <button class="fg-dropdown__item" data-val="Local Offline Gateway" type="button">
+                  <span>📡 Local Offline Gateway</span>
+                  <span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Textarea -->
+          <div class="fg-field" style="margin-bottom: 0;">
+            <label class="fg-label" for="txtNotes">
+              <span>Diagnostics Log / Notes</span>
+            </label>
+            <textarea id="txtNotes" class="fg-input fg-textarea" placeholder="Enter system maintenance logs..."></textarea>
+          </div>
+        </div>
+
+        <!-- COMPONENT CARD 2: Toggles, Checkbox, Segmented Control & Buttons -->
+        <div class="fg-card fg-card--interactive">
+          <div class="fg-card__header">
+            <div>
+              <h3 class="fg-card__title">Switches, Checkbox & Segmented</h3>
+              <div class="fg-card__subtitle">Liquid spring physics & dynamic island glide</div>
+            </div>
+            <span class="fg-badge-chip" style="margin: 0;">Micro-Interactions</span>
+          </div>
+
+          <!-- Segmented Control with Liquid Glide -->
+          <div class="fg-field">
+            <label class="fg-label">
+              <span>Dynamic Island Segmented Switch</span>
+              <span class="fg-label__hint">Magnetic Glide</span>
+            </label>
+            <div class="fg-segmented" id="segControlMain">
+              <div class="fg-segmented__indicator"></div>
+              <div class="fg-segmented__item fg-segmented__item--active" data-index="0">Autonomous</div>
+              <div class="fg-segmented__item" data-index="1">Manual Override</div>
+              <div class="fg-segmented__item" data-index="2">Standby</div>
+            </div>
+          </div>
+
+          <!-- Liquid Toggles -->
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px;">
+            <div class="fg-toggle-row">
+              <div class="fg-toggle-label">
+                <span class="fg-toggle-title">Atmospheric Pressure Balancer</span>
+                <span class="fg-toggle-subtitle">Auto-regulates internal barometrics</span>
+              </div>
+              <label class="fg-toggle">
+                <input type="checkbox" id="chkPressure" checked />
+                <span class="fg-toggle__track">
+                  <span class="fg-toggle__thumb"></span>
+                </span>
+              </label>
+            </div>
+
+            <div class="fg-toggle-row">
+              <div class="fg-toggle-label">
+                <span class="fg-toggle-title">Acoustic Noise Cloaking</span>
+                <span class="fg-toggle-subtitle">Inverse phase sound cancellation</span>
+              </div>
+              <label class="fg-toggle">
+                <input type="checkbox" id="chkNoise" />
+                <span class="fg-toggle__track">
+                  <span class="fg-toggle__thumb"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Glass Checkboxes -->
+          <div class="fg-field">
+            <label class="fg-label">
+              <span>Glass Checkboxes (Liquid SVG Pop)</span>
+            </label>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
+              <label class="fg-checkbox-wrap">
+                <input type="checkbox" checked />
+                <div class="fg-checkbox">
+                  <svg class="fg-checkbox__icon" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <span class="fg-checkbox-label">Synchronize telemetry across all auxiliary glass nodes</span>
+              </label>
+
+              <label class="fg-checkbox-wrap">
+                <input type="checkbox" />
+                <div class="fg-checkbox">
+                  <svg class="fg-checkbox__icon" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <span class="fg-checkbox-label">Enable high-frequency thermal flux alerts</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Button States Demonstration -->
+          <div class="fg-field" style="margin-bottom: 0;">
+            <label class="fg-label">
+              <span>Button States (Hover, Active, Pressed Tactile Feedback)</span>
+            </label>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;">
+              <button class="fg-btn fg-btn--primary">
+                <span>⚡ Primary Action</span>
+              </button>
+
+              <button class="fg-btn fg-btn--secondary">
+                <span>Frosted Button</span>
+              </button>
+
+              <!-- Explicit Pressed State for Demonstration -->
+              <button class="fg-btn fg-btn--primary fg-btn--pressed" title="Simulating physical compression">
+                <span>Pressed State</span>
+              </button>
+
+              <button class="fg-btn fg-btn--ghost">
+                <span>Ghost Action</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         4. Angular Integration Guide & Clean Architecture
+         ==================================================================== -->
+    <div class="fg-card" style="margin-bottom: 60px;">
+      <div class="fg-card__header">
+        <div>
+          <div class="fg-badge-chip">Developer Ready</div>
+          <h3 class="fg-card__title">Angular Reusable Component Architecture</h3>
+          <div class="fg-card__subtitle">Ready-to-use Standalone Components with signals & two-way bindings</div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="fg-tab-code-btn active" onclick="switchCodeTab('toggle')">fg-toggle</button>
+          <button class="fg-tab-code-btn" onclick="switchCodeTab('segmented')">fg-segmented</button>
+          <button class="fg-tab-code-btn" onclick="switchCodeTab('dropdown')">fg-dropdown</button>
+        </div>
+      </div>
+
+      <div id="codeToggle" class="fg-code-box">
+<pre><code>// Angular 17/18/19 Standalone Component: fg-toggle.component.ts
+import { Component, input, model, output } from '@angular/core';
+
+@Component({
+  selector: 'fg-toggle',
+  standalone: true,
+  template: `
+    &lt;div class="fg-toggle-row"&gt;
+      &lt;div class="fg-toggle-label"&gt;
+        &lt;span class="fg-toggle-title"&gt;{{ title() }}&lt;/span&gt;
+        @if (subtitle()) {
+          &lt;span class="fg-toggle-subtitle"&gt;{{ subtitle() }}&lt;/span&gt;
+        }
+      &lt;/div&gt;
+      &lt;label class="fg-toggle"&gt;
+        &lt;input type="checkbox" [checked]="checked()" (change)="onToggle($event)" /&gt;
+        &lt;span class="fg-toggle__track"&gt;
+          &lt;span class="fg-toggle__thumb"&gt;&lt;/span&gt;
+        &lt;/span&gt;
+      &lt;/label&gt;
+    &lt;/div&gt;
+  `
+})
+export class FgToggleComponent {
+  title = input.required&lt;string&gt;();
+  subtitle = input&lt;string&gt;();
+  checked = model&lt;boolean&gt;(false);
+
+  onToggle(event: Event) {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.checked.set(isChecked);
+  }
+}</code></pre>
+      </div>
+
+      <div id="codeSegmented" class="fg-code-box" style="display: none;">
+<pre><code>// Angular Standalone Component: fg-segmented.component.ts
+import { Component, input, model, viewChild, ElementRef } from '@angular/core';
+
+@Component({
+  selector: 'fg-segmented',
+  standalone: true,
+  template: `
+    &lt;div class="fg-segmented" #container&gt;
+      &lt;div class="fg-segmented__indicator" [style.transform]="indicatorTransform()" [style.width.px]="indicatorWidth()"&gt;&lt;/div&gt;
+      @for (opt of options(); track opt; let idx = $index) {
+        &lt;div class="fg-segmented__item" [class.fg-segmented__item--active]="selected() === idx" (click)="select(idx, $event)"&gt;
+          {{ opt }}
+        &lt;/div&gt;
+      }
+    &lt;/div&gt;
+  `
+})
+export class FgSegmentedComponent {
+  options = input.required&lt;string[]&gt;();
+  selected = model&lt;number&gt;(0);
+  indicatorTransform = signal&lt;string&gt;('translateX(0)');
+  indicatorWidth = signal&lt;number&gt;(0);
+
+  select(index: number, event: MouseEvent) {
+    this.selected.set(index);
+    const target = event.currentTarget as HTMLElement;
+    this.indicatorWidth.set(target.offsetWidth);
+    this.indicatorTransform.set(`translateX(${target.offsetLeft - 4}px)`);
+  }
+}</code></pre>
+      </div>
+
+      <div id="codeDropdown" class="fg-code-box" style="display: none;">
+<pre><code>// Angular Standalone Component: fg-dropdown.component.ts
+import { Component, input, model, signal } from '@angular/core';
+
+@Component({
+  selector: 'fg-dropdown',
+  standalone: true,
+  template: `
+    &lt;div class="fg-dropdown" [class.fg-dropdown--open]="isOpen()"&gt;
+      &lt;button class="fg-dropdown__trigger" type="button" (click)="toggle()"&gt;
+        &lt;span&gt;{{ selectedLabel() }}&lt;/span&gt;
+        &lt;span class="fg-dropdown__chevron"&gt;▼&lt;/span&gt;
+      &lt;/button&gt;
+      &lt;div class="fg-dropdown__menu"&gt;
+        @for (item of items(); track item.value) {
+          &lt;button class="fg-dropdown__item" [class.fg-dropdown__item--selected]="item.value === value()" (click)="select(item)"&gt;
+            &lt;span&gt;{{ item.label }}&lt;/span&gt;
+            @if (item.value === value()) { &lt;span&gt;✓&lt;/span&gt; }
+          &lt;/button&gt;
+        }
+      &lt;/div&gt;
+    &lt;/div&gt;
+  `
+})
+export class FgDropdownComponent {
+  items = input.required&lt;{ label: string; value: any }[]&gt;();
+  value = model&lt;any&gt;();
+  isOpen = signal(false);
+
+  toggle() { this.isOpen.update(v => !v); }
+  select(item: { label: string; value: any }) {
+    this.value.set(item.value);
+    this.isOpen.set(false);
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="text-align: center; font-size: var(--size-md); color: var(--fg-text-muted); padding-bottom: 24px;">
+      Futuristic Glassmorphism Component Design System • Crafted with OKLCH, CSS color-mix() & Liquid Spring Physics
+    </footer>
+
+  </div>
+
+  <!-- ====================================================================
+       5. Lightweight Standalone Controller (FuturisticGlassEngine)
+       ==================================================================== -->
+  <script>
+    class FuturisticGlassEngine {
+      constructor() {
+        this.initPaletteTuner();
+        this.initSegmentedControls();
+        this.initDropdowns();
+        this.initCircleMatrix();
+        this.initHapticFeedback();
+      }
+
+      /* --------------------------------------------------------------------
+         1. Live Palette Tuner with OKLCH
+         -------------------------------------------------------------------- */
+      initPaletteTuner() {
+        const root = document.documentElement;
+        const sliderPrimary = document.getElementById('sliderPrimaryHue');
+        const sliderAccent = document.getElementById('sliderAccentHue');
+        const sliderSecondary = document.getElementById('sliderSecondaryHue');
+        const valPrimary = document.getElementById('valPrimaryHue');
+        const valAccent = document.getElementById('valAccentHue');
+        const valSecondary = document.getElementById('valSecondaryHue');
+        const btnReset = document.getElementById('btnResetTheme');
+
+        const updatePrimary = (hue) => {
+          root.style.setProperty('--fg-hue-primary', hue);
+          valPrimary.textContent = hue;
+        };
+
+        const updateAccent = (hue) => {
+          root.style.setProperty('--fg-hue-accent', hue);
+          valAccent.textContent = hue;
+        };
+
+        const updateSecondary = (hue) => {
+          root.style.setProperty('--fg-hue-secondary', hue);
+          valSecondary.textContent = hue;
+        };
+
+        sliderPrimary?.addEventListener('input', (e) => updatePrimary(e.target.value));
+        sliderAccent?.addEventListener('input', (e) => updateAccent(e.target.value));
+        sliderSecondary?.addEventListener('input', (e) => updateSecondary(e.target.value));
+
+        btnReset?.addEventListener('click', () => {
+          sliderPrimary.value = 232;
+          sliderAccent.value = 196;
+          sliderSecondary.value = 285;
+          updatePrimary(232);
+          updateAccent(196);
+          updateSecondary(285);
+        });
+      }
+
+      /* --------------------------------------------------------------------
+         2. Dynamic Island Segmented Pill Glide Engine
+         -------------------------------------------------------------------- */
+      initSegmentedControls() {
+        const segmentedControls = document.querySelectorAll('.fg-segmented');
+
+        segmentedControls.forEach(segmented => {
+          const indicator = segmented.querySelector('.fg-segmented__indicator');
+          const items = segmented.querySelectorAll('.fg-segmented__item');
+
+          const updateIndicator = (target) => {
+            if (!indicator || !target) return;
+            const segRect = segmented.getBoundingClientRect();
+            const targetRect = target.getBoundingClientRect();
+            const leftOffset = targetRect.left - segRect.left - 4; // Subtract padding offset
+            indicator.style.width = `${targetRect.width}px`;
+            indicator.style.transform = `translateX(${leftOffset}px)`;
+          };
+
+          // Position on initial load
+          const activeItem = segmented.querySelector('.fg-segmented__item--active') || items[0];
+          if (activeItem) {
+            setTimeout(() => updateIndicator(activeItem), 50);
+          }
+
+          items.forEach(item => {
+            item.addEventListener('click', () => {
+              items.forEach(i => i.classList.remove('fg-segmented__item--active'));
+              item.classList.add('fg-segmented__item--active');
+              updateIndicator(item);
+            });
+          });
+
+          // Reposition on window resize
+          window.addEventListener('resize', () => {
+            const currentActive = segmented.querySelector('.fg-segmented__item--active');
+            if (currentActive) updateIndicator(currentActive);
+          });
+        });
+      }
+
+      /* --------------------------------------------------------------------
+         3. Dynamic Island Glass Dropdown Engine
+         -------------------------------------------------------------------- */
+      initDropdowns() {
+        const dropdowns = document.querySelectorAll('.fg-dropdown');
+
+        dropdowns.forEach(dropdown => {
+          const trigger = dropdown.querySelector('.fg-dropdown__trigger');
+          const menu = dropdown.querySelector('.fg-dropdown__menu');
+          const items = dropdown.querySelectorAll('.fg-dropdown__item');
+          const labelSpan = dropdown.querySelector('#demoDropdownValue');
+
+          trigger?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.contains('fg-dropdown--open');
+            // Close any other open dropdowns first
+            document.querySelectorAll('.fg-dropdown--open').forEach(d => {
+              if (d !== dropdown) d.classList.remove('fg-dropdown--open');
+            });
+            dropdown.classList.toggle('fg-dropdown--open', !isOpen);
+          });
+
+          items.forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const val = item.getAttribute('data-val');
+              items.forEach(i => {
+                i.classList.remove('fg-dropdown__item--selected');
+                const check = i.querySelector('span:last-child');
+                if (check) check.textContent = '';
+              });
+              item.classList.add('fg-dropdown__item--selected');
+              const check = item.querySelector('span:last-child');
+              if (check) check.textContent = '✓';
+
+              if (labelSpan) labelSpan.textContent = val;
+              dropdown.classList.remove('fg-dropdown--open');
+            });
+          });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.fg-dropdown')) {
+            document.querySelectorAll('.fg-dropdown--open').forEach(d => d.classList.remove('fg-dropdown--open'));
+          }
+        });
+      }
+
+      /* --------------------------------------------------------------------
+         4. Circular Action Matrix Toggle
+         -------------------------------------------------------------------- */
+      initCircleMatrix() {
+        const circleBtns = document.querySelectorAll('.fg-circle-grid .fg-circle-btn');
+        circleBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            btn.classList.toggle('fg-circle-btn--active');
+          });
+        });
+      }
+
+      /* --------------------------------------------------------------------
+         5. Tactile Feedback & Liquid Press Physics
+         -------------------------------------------------------------------- */
+      initHapticFeedback() {
+        const buttons = document.querySelectorAll('.fg-btn, .fg-circle-btn');
+        buttons.forEach(btn => {
+          btn.addEventListener('mousedown', () => {
+            btn.classList.add('fg-btn--pressed');
+          });
+          btn.addEventListener('mouseup', () => {
+            btn.classList.remove('fg-btn--pressed');
+          });
+          btn.addEventListener('mouseleave', () => {
+            btn.classList.remove('fg-btn--pressed');
+          });
+        });
+      }
+    }
+
+    // Initialize on DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+      window.fgEngine = new FuturisticGlassEngine();
+    });
+
+    // Angular Code Snippet Tab Switcher
+    function switchCodeTab(tab) {
+      const tabs = ['toggle', 'segmented', 'dropdown'];
+      tabs.forEach(t => {
+        const el = document.getElementById('code' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.fg-tab-code-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.includes(tab));
+      });
+    }
+  </script>
+</body>
+</html>

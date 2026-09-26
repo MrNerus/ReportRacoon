@@ -7,13 +7,15 @@ import {
   ViewChildren,
   ElementRef,
   QueryList,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { report, sampleInvoiceData } from '../../data/data';
 import { PAGE_DIMENSIONS, PageSetting, PageType, ReportTemplate, TemplateSection } from '../../model/page.model';
 import { BaseCell, FieldCell, ReportTable, TextCell } from '../../model/cell.model';
+import { AtomModule, MoleculeModule } from '../futuristic-glass.module';
 
 export interface RenderedTableChunk {
   table: ReportTable;
@@ -37,18 +39,30 @@ export interface RenderedPage {
 @Component({
   selector: 'app-render-canvas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AtomModule, MoleculeModule],
   templateUrl: './render-canvas.component.html',
   styleUrl: './render-canvas.component.css'
 })
 export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
+  private fb = inject(FormBuilder);
+
+  pageSettingForm = this.fb.group({
+    pageType: this.fb.nonNullable.control<PageType>('A4', Validators.required),
+    orientation: this.fb.nonNullable.control<'portrait' | 'landscape'>('portrait', Validators.required),
+    pageSplit: this.fb.nonNullable.control<'paginated' | 'continuous'>('paginated', Validators.required),
+    width: [210],
+    height: [297],
+    margin: this.fb.group({
+      top: [12],
+      bottom: [12],
+      left: [12],
+      right: [12]
+    })
+  });
+
+
   readonly template: ReportTemplate = report;
   readonly data = sampleInvoiceData;
-
-  // Active Display Configuration
-  selectedPageType: PageType = this.template.settings.pageType ?? 'A4';
-  selectedOrientation: 'portrait' | 'landscape' = this.template.settings.orientation ?? 'portrait';
-  isContinuous: boolean = !!this.template.settings.continuous;
 
   // Viewport Pan & Zoom State
   zoomLevel: number = 1.0;
@@ -66,7 +80,7 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   currentSettings: PageSetting = { ...this.template.settings };
   pages: RenderedPage[] = [];
 
-  readonly availablePageTypes: PageType[] = ['A4', 'Letter', 'Legal', 'Receipt', 'Custom'];
+  readonly availablePageTypes: PageType[] = ['A4', 'Letter', 'Legal', 'Custom'];
 
   // Viewport and Stage DOM references
   @ViewChild('canvasViewport') canvasViewport?: ElementRef<HTMLElement>;
@@ -112,6 +126,22 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get printableHeightMm(): number {
     return Math.max(10, this.currentSettings.height - this.currentSettings.margin.top - this.currentSettings.margin.bottom);
+  }
+// ======================
+  get pageSetting() {
+    return this.pageSettingForm.controls;
+  }
+
+  get selectedPageType(): PageType {
+    return this.pageSetting.pageType.value;
+  }
+
+  get selectedOrientation(): 'portrait' | 'landscape' {
+    return this.pageSetting.orientation.value;
+  }
+
+  get isContinuous(): boolean {
+    return this.pageSetting.pageSplit.value === 'continuous';
   }
 
   // DOM elements for offscreen exact measurement
@@ -175,24 +205,6 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onResize(): void {
     this.cdr.detectChanges();
-  }
-
-  setPageType(pageType: PageType): void {
-    this.selectedPageType = pageType;
-    if (pageType === 'Receipt') {
-      this.isContinuous = true;
-    }
-    this.applyPageSettings();
-  }
-
-  setOrientation(orientation: 'portrait' | 'landscape'): void {
-    this.selectedOrientation = orientation;
-    this.applyPageSettings();
-  }
-
-  toggleContinuous(): void {
-    this.isContinuous = !this.isContinuous;
-    this.applyPageSettings();
   }
 
   printReport(): void {
@@ -403,7 +415,7 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     let width = baseDim.width;
     let height = baseDim.height;
 
-    if (this.selectedOrientation === 'landscape' && this.selectedPageType !== 'Receipt') {
+    if (this.selectedOrientation === 'landscape') {
       const temp = width;
       width = height;
       height = temp;

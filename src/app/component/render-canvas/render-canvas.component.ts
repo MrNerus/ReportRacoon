@@ -8,7 +8,8 @@ import {
   ElementRef,
   QueryList,
   ChangeDetectorRef,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -41,6 +42,7 @@ export interface RenderedPage {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, AtomModule, MoleculeModule],
   templateUrl: './render-canvas.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './render-canvas.component.css'
 })
 export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {

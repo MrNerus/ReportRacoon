@@ -1,452 +1,380 @@
-<main class="main-container p-xl gap-xl">
+<main class="grid grid-cols-[35ch_1fr_35ch] h-full p-4 gap-4">
   <!-- Canvas Control Toolbar (Hidden in Print) -->
-  <div class="canvas-toolbar height-available  gap-md">
-    <app-fg-container [interactive]="true" title="Page Setting" subtitle="Page setting">
-      <form [formGroup]="pageSettingForm" class="reactive-form">
-        <div class="display-grid ignore-child-size" style="grid-template-columns: 1fr 2fr; gap: var(--size-sm) var(--size-md)">
-          <label for="pageType" class="fg-label">Page Type</label>
-          <app-fg-dropdown
-            formControlName="pageType"
-            [options]="[
-              { label: 'A4 (210 × 297 mm)', value: 'A4' },
-              { label: 'US Letter (215.9 × 279.4 mm)', value: 'Letter' },
-              { label: 'US Legal (215.9 × 355.6 mm)', value: 'Legal' },
-              { label: 'Custom', value: 'Custom' }
-            ]"
-            (valueChange)="applyPageSettings()"
-          ></app-fg-dropdown>
+  <div class="height-available flex flex-col gap-4 overflow-y-auto min-h-0">
+    <div class="flex flex-col gap-4 p-3 border border-gray-300 rounded-2xl">
+      <div>
+        <h3 class="text-sm font-semibold tracking-tight">Page Settings</h3>
+        <p class="text-xs text-muted-foreground">Paper dimensions and layout</p>
+      </div>
 
-          <label for="pageSplit" class="fg-label">Page Split</label>
-          <app-fg-segment-toggle
-            formControlName="pageSplit"
-            [options]="[
-              { label: 'Continuous', value: 'continuous' },
-              { label: 'Paginated', value: 'paginated' }
-            ]"
-            (onChange)="applyPageSettings()"
-          ></app-fg-segment-toggle>
-          
-          @if (pageSetting.pageSplit.value === 'paginated') {
-            <label for="orientation" class="fg-label">Orientation</label>
-            <app-fg-dropdown
-              formControlName="orientation"
-              [options]="[
-                { label: 'Portrait', value: 'portrait' },
-                { label: 'Landscape', value: 'landscape' }
-              ]"
-              (valueChange)="applyPageSettings()"
-            ></app-fg-dropdown>
+      <form [formGroup]="pageSettingForm" class="flex flex-col gap-y-3">
+        <div class="grid grid-cols-[8ch_1fr] gap-2 pl-2 items-center">
+          <label for="pageType" class="text-xs font-medium text-foreground">Page Type</label>
+          <select id="pageType" formControlName="pageType" (change)="applyPageSettings()"
+            class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="Letter">US Letter (215.9 × 279.4 mm)</option>
+            <option value="Legal">US Legal (215.9 × 355.6 mm)</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-[8ch_1fr] gap-2 pl-2 items-center">
+          <label for="pageSplit" class="text-xs font-medium text-foreground">Page Split</label>
+          <select id="pageSplit" formControlName="pageSplit" (change)="applyPageSettings()"
+            class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="paginated">Paginated</option>
+            <option value="continuous">Continuous</option>
+          </select>
+        </div>
+
+        @if (pageSetting.pageSplit.value === 'paginated') {
+        <div class="grid grid-cols-[8ch_1fr] gap-2 pl-2 items-center">
+          <label for="orientation" class="text-xs font-medium text-foreground">Orientation</label>
+          <select id="orientation" formControlName="orientation" (change)="applyPageSettings()"
+            class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
+        }
+
+        @if (pageSetting['pageType'].value === 'Custom') {
+        <div class="grid grid-cols-2 gap-2 pl-2 items-center">
+          <div>
+            <label for="width" class="text-xs font-medium text-foreground">Width (mm)</label>
+            <input
+              class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              id="width" type="number" formControlName="width" (input)="applyPageSettings()" />
+          </div>
+
+          @if (pageSetting['pageSplit'].value === 'paginated') {
+          <div>
+            <label for="height" class="text-xs font-medium text-foreground">Height (mm)</label>
+            <input
+              class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              id="height" type="number" formControlName="height" (input)="applyPageSettings()" />
+          </div>
           }
+        </div>
+        }
 
-          @if (pageSetting['pageType'].value === 'Custom') {
-            <label for="width" class="fg-label">Width</label>
-            <app-fg-text-input
-              formControlName="width"
-            ></app-fg-text-input>
-
-            @if (pageSetting['pageSplit'].value === 'paginated') {
-              <label for="height" class="fg-label">Height</label>
-              <app-fg-text-input
-                formControlName="height"
-              ></app-fg-text-input>
-            }
-          }
-          
-          <app-fgm-field label="Margin" style="grid-column: 1 / span 2;">
-            <div class="display-grid gap-md" style="grid-template-columns: 1fr 1fr 1fr 1fr;" [formGroup]="pageSettingForm.controls['margin']">
-              
-              <div class="display-flex flex-direction-column">
-                <label for="top" class="fg-label">Top</label>
-                <app-fg-text-input
-                  formControlName="top"
-                ></app-fg-text-input>
-              </div>
-              
-              <div class="display-flex flex-direction-column">
-                <label for="right" class="fg-label">Right</label>
-                <app-fg-text-input
-                  formControlName="right"
-                ></app-fg-text-input>
-              </div>
-              
-              <div class="display-flex flex-direction-column">
-                <label for="bottom" class="fg-label">Bottom</label>
-                <app-fg-text-input
-                  formControlName="bottom"
-                ></app-fg-text-input>
-              </div>
-              
-              <div class="display-flex flex-direction-column">
-                <label for="left" class="fg-label">Left</label>
-                <app-fg-text-input
-                  formControlName="left"
-                ></app-fg-text-input>
-              </div>
+        <div class="grid grid-cols-[8ch_1fr] gap-2 pl-2 items-center">
+          <span class="text-xs font-medium text-foreground">Margins<br>(mm)</span>
+          <div class="grid grid-cols-4 gap-1.5" [formGroup]="pageSettingForm.controls['margin']">
+            <div>
+              <label for="top" class="text-[10px] text-muted-foreground">Top</label>
+              <input
+                class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                id="top" type="number" formControlName="top" (input)="applyPageSettings()" />
             </div>
-          </app-fgm-field>
+            <div>
+              <label for="right" class="text-[10px] text-muted-foreground">Right</label>
+              <input
+                class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                id="right" type="number" formControlName="right" (input)="applyPageSettings()" />
+            </div>
+            <div>
+              <label for="bottom" class="text-[10px] text-muted-foreground">Bottom</label>
+              <input
+                class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                id="bottom" type="number" formControlName="bottom" (input)="applyPageSettings()" />
+            </div>
+            <div>
+              <label for="left" class="text-[10px] text-muted-foreground">Left</label>
+              <input
+                class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                id="left" type="number" formControlName="left" (input)="applyPageSettings()" />
+            </div>
+          </div>
         </div>
       </form>
-    </app-fg-container>
-    <app-fg-container [interactive]="true" title="Page Setting" subtitle="Page setting" class="height-available">
-      add template
-    </app-fg-container>
+    </div>
+
+    <div class="flex flex-col gap-4 p-3 border border-gray-300 rounded-2xl height-available">
+      <div>
+        <h3 class="text-sm font-semibold tracking-tight">Template Sections</h3>
+        <p class="text-xs text-muted-foreground">Configure sections and elements</p>
+      </div>
+    </div>
   </div>
 
   <!-- Main Canvas Viewport (Draggable & Zoomable) -->
-  <div
-    #canvasViewport
-    class="canvas-viewport height-available soft-edge-container"
-    [class.is-dragging]="isDragging"
-    (pointerdown)="onPointerDown($event)"
-    (pointermove)="onPointerMove($event)"
-    (pointerup)="onPointerUp($event)"
-    (pointercancel)="onPointerUp($event)"
-  >
+  <div #canvasViewport class="canvas-viewport p-4 border border-gray-300 rounded-2xl height-available min-h-0"
+    [class.is-dragging]="isDragging" (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)">
     <!-- Transformable Canvas Stage Layer -->
-    <div
-      #canvasStage
-      class="canvas-stage"
-      [style.transform]="stageTransform"
-    >
+    <div #canvasStage class="canvas-stage" [style.transform]="stageTransform">
       <div #pagesContainer class="pages-container">
-      @for (page of pages; track page.pageNumber) {
+        @for (page of pages; track page.pageNumber) {
         <div class="page-wrapper">
           <!-- Visual Page Tag (for Screen Preview) -->
           <div class="screen-page-tag">
-            <span class="tag-number">Page {{ page.pageNumber }} of {{ page.totalPages }}</span>
-            <span class="tag-size">{{ currentSettings.width }}mm × {{ currentSettings.height }}mm ({{ currentSettings.pageType }})</span>
+            <span class="text-muted-foreground text-sm">Page {{ page.pageNumber }} of {{ page.totalPages }}</span>
+            <span class="text-muted-foreground text-xs">{{ currentSettings.width }}mm × {{ currentSettings.height }}mm
+              ({{
+              currentSettings.pageType }})</span>
           </div>
 
           <!-- Real-life Paper Sheet -->
-          <div
-            class="print-sheet"
-            [class.continuous-sheet]="isContinuous"
-            [style.width.mm]="currentSettings.width"
+          <div class="print-sheet" [class.continuous-sheet]="isContinuous" [style.width.mm]="currentSettings.width"
             [style.height.mm]="isContinuous ? null : currentSettings.height"
             [style.min-height.mm]="isContinuous ? currentSettings.height : null"
             [style.padding-top.mm]="currentSettings.margin.top"
             [style.padding-bottom.mm]="currentSettings.margin.bottom"
             [style.padding-left.mm]="currentSettings.margin.left"
-            [style.padding-right.mm]="currentSettings.margin.right"
-          >
+            [style.padding-right.mm]="currentSettings.margin.right">
             <!-- 1. Page Header (Repeats at top of each page if configured) -->
             @if (page.pageHeader) {
-              <div
-                class="template-section section-page-header"
-                [style.min-height.mm]="page.pageHeader.height.value"
-              >
-                @for (element of page.pageHeader.elements; track element.id) {
-                  @if (isTextOrField(element)) {
-                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
-                    </div>
-                  }
-                }
+            <div class="template-section section-page-header" [style.min-height.mm]="page.pageHeader.height.value">
+              @for (element of page.pageHeader.elements; track element.id) {
+              @if (isTextOrField(element)) {
+              <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
               </div>
+              }
+              }
+            </div>
             }
 
             <!-- 2. Report Header (Appears on Page 1 only) -->
             @if (page.reportHeader) {
-              <div
-                class="template-section section-report-header"
-                [style.min-height.mm]="page.reportHeader.height.value"
-              >
-                @for (element of page.reportHeader.elements; track element.id) {
-                  @if (isTextOrField(element)) {
-                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
-                    </div>
-                  }
-                }
+            <div class="template-section section-report-header" [style.min-height.mm]="page.reportHeader.height.value">
+              @for (element of page.reportHeader.elements; track element.id) {
+              @if (isTextOrField(element)) {
+              <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
               </div>
+              }
+              }
+            </div>
             }
 
             <!-- 3. Body Section (Table Chunks & Other Elements) -->
             @if (page.bodyTableChunks.length > 0 || page.otherBodyElements.length > 0) {
-              <div class="template-section section-body">
-                <!-- Other Non-Table Body Elements -->
-                @for (element of page.otherBodyElements; track element.id) {
-                  @if (isTextOrField(element)) {
-                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
-                    </div>
+            <div class="template-section section-body">
+              <!-- Other Non-Table Body Elements -->
+              @for (element of page.otherBodyElements; track element.id) {
+              @if (isTextOrField(element)) {
+              <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
+              </div>
+              }
+              }
+
+              <!-- Table Chunks -->
+              @for (chunk of page.bodyTableChunks; track chunk.table.id + '-' + chunk.startIndex) {
+              <div class="report-table" [style.border-collapse]="chunk.table.borderCollapse ? 'collapse' : 'separate'">
+                <!-- Table Header Row (Repeats on every page if configured) -->
+                @if (chunk.showHeader) {
+                <div class="table-row table-header-row"
+                  [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
+                  [style.min-height.mm]="chunk.table.headerRow.height">
+                  @for (th of chunk.table.headerRow.cells; track th.id) {
+                  <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
+                    {{ resolveValue(th, undefined, page.pageNumber, page.totalPages) }}
+                  </div>
                   }
+                </div>
                 }
 
-                <!-- Table Chunks -->
-                @for (chunk of page.bodyTableChunks; track chunk.table.id + '-' + chunk.startIndex) {
-                  <div
-                    class="report-table"
-                    [style.border-collapse]="chunk.table.borderCollapse ? 'collapse' : 'separate'"
-                  >
-                    <!-- Table Header Row (Repeats on every page if configured) -->
-                    @if (chunk.showHeader) {
-                      <div
-                        class="table-row table-header-row"
-                        [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
-                        [style.min-height.mm]="chunk.table.headerRow.height"
-                      >
-                        @for (th of chunk.table.headerRow.cells; track th.id) {
-                          <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
-                            {{ resolveValue(th, undefined, page.pageNumber, page.totalPages) }}
-                          </div>
-                        }
-                      </div>
-                    }
-
-                    <!-- Table Detail Rows for this Page Chunk -->
-                    @for (item of chunk.items; track (item.index ?? $index)) {
-                      <div
-                        class="table-row table-detail-row"
-                        [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
-                        [style.min-height.mm]="chunk.table.detailRow.height ?? 8"
-                      >
-                        @for (td of chunk.table.detailRow.cells; track td.id) {
-                          <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
-                            {{ resolveValue(td, item, page.pageNumber, page.totalPages) }}
-                          </div>
-                        }
-                      </div>
-                    }
-
-                    <!-- Table Footer Row (if present on last chunk) -->
-                    @if (chunk.showFooter && chunk.table.footerRow) {
-                      <div
-                        class="table-row table-footer-row"
-                        [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
-                        [style.min-height.mm]="chunk.table.footerRow.height"
-                      >
-                        @for (tf of chunk.table.footerRow.cells; track tf.id) {
-                          <div class="table-cell tf-cell" [ngStyle]="getCellStyles(tf)">
-                            {{ resolveValue(tf, undefined, page.pageNumber, page.totalPages) }}
-                          </div>
-                        }
-                      </div>
-                    }
+                <!-- Table Detail Rows for this Page Chunk -->
+                @for (item of chunk.items; track (item.index ?? $index)) {
+                <div class="table-row table-detail-row"
+                  [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
+                  [style.min-height.mm]="chunk.table.detailRow.height ?? 8">
+                  @for (td of chunk.table.detailRow.cells; track td.id) {
+                  <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
+                    {{ resolveValue(td, item, page.pageNumber, page.totalPages) }}
                   </div>
+                  }
+                </div>
+                }
+
+                <!-- Table Footer Row (if present on last chunk) -->
+                @if (chunk.showFooter && chunk.table.footerRow) {
+                <div class="table-row table-footer-row"
+                  [style.grid-template-columns]="getTableColumnTemplate(chunk.table)"
+                  [style.min-height.mm]="chunk.table.footerRow.height">
+                  @for (tf of chunk.table.footerRow.cells; track tf.id) {
+                  <div class="table-cell tf-cell" [ngStyle]="getCellStyles(tf)">
+                    {{ resolveValue(tf, undefined, page.pageNumber, page.totalPages) }}
+                  </div>
+                  }
+                </div>
                 }
               </div>
+              }
+            </div>
             }
 
             <!-- 4. Report Footer (Appears on the final section) -->
             @if (page.reportFooter) {
-              <div
-                class="template-section section-report-footer"
-                [style.min-height.mm]="page.reportFooter.height.value"
-              >
-                @for (element of page.reportFooter.elements; track element.id) {
-                  @if (isTextOrField(element)) {
-                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
-                    </div>
-                  }
-                }
+            <div class="template-section section-report-footer" [style.min-height.mm]="page.reportFooter.height.value">
+              @for (element of page.reportFooter.elements; track element.id) {
+              @if (isTextOrField(element)) {
+              <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
               </div>
+              }
+              }
+            </div>
             }
 
             <!-- 5. Page Footer (Pinned at bottom of each page) -->
             @if (page.pageFooter) {
-              <div
-                class="template-section section-page-footer"
-                [style.min-height.mm]="page.pageFooter.height.value"
-              >
-                @for (element of page.pageFooter.elements; track element.id) {
-                  @if (isTextOrField(element)) {
-                    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-                      {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
-                    </div>
-                  }
-                }
+            <div class="template-section section-page-footer" [style.min-height.mm]="page.pageFooter.height.value">
+              @for (element of page.pageFooter.elements; track element.id) {
+              @if (isTextOrField(element)) {
+              <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+                {{ resolveValue(element, undefined, page.pageNumber, page.totalPages) }}
               </div>
+              }
+              }
+            </div>
             }
           </div>
         </div>
-      }
+        }
       </div>
     </div>
 
     <!-- Floating Canvas Controls Overlay (HUD) -->
-    <div class="canvas-hud" (pointerdown)="$event.stopPropagation()">
-      <button
-        type="button"
-        class="hud-btn"
-        (click)="zoomOut()"
-        [disabled]="zoomLevel <= 0.2"
-        title="Zoom Out (−)"
-      >
-        −
+    <div
+      class="rounded-lg p-2 w-max mx-auto shadow-xl border border-slate-200 z-50 absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 items-center bg-background  "
+      (pointerdown)="$event.stopPropagation()">
+      <button type="button"
+        class="px-2 py-1 border text-center align-middle text-muted-foreground cursor-pointer bg-background hover:text-accent/80 hover:font-bold active:text-accent flex items-center justify-center"
+        (click)="zoomOut()" [disabled]="zoomLevel <= 0.2" title="Zoom Out (-)">
+        -
       </button>
-      <span class="hud-zoom-text">{{ zoomPercentage }}%</span>
-      <button
-        type="button"
-        class="hud-btn"
-        (click)="zoomIn()"
-        [disabled]="zoomLevel >= 3.0"
-        title="Zoom In (+)"
-      >
+      <span class="text-muted-foreground">{{ zoomPercentage }}%</span>
+      <button type="button"
+        class="px-2 py-1 border text-center align-middle text-muted-foreground cursor-pointer bg-background hover:text-accent/80 hover:font-bold active:text-accent flex items-center justify-center"
+        (click)="zoomIn()" [disabled]="zoomLevel >= 3.0" title="Zoom In (+)">
         +
       </button>
-      <div class="hud-separator"></div>
-      <button
-        type="button"
-        class="hud-btn hud-pill-btn"
-        (click)="resetToFit()"
-        title="Fit Page to Viewport"
-      >
+      <div class="w-px h-4 bg-black/50"></div>
+      <button type="button"
+        class="px-2 py-1 border text-center align-middle text-muted-foreground cursor-pointer bg-background hover:text-accent/80 hover:font-bold active:text-accent flex items-center justify-center"
+        (click)="resetToFit()" title="Fit Page to Viewport">
         Fit
       </button>
-      <button
-        type="button"
-        class="hud-btn hud-pill-btn"
-        [class.active]="zoomPercentage === 100"
-        (click)="resetTo100()"
-        title="Zoom to 100%"
-      >
+      <button type="button"
+        class="px-2 py-1 border text-center align-middle text-muted-foreground cursor-pointer bg-background hover:text-accent/80 hover:font-bold active:text-accent flex items-center justify-center"
+        (click)="resetTo100()" title="Zoom to 100%">
         100%
       </button>
-      <div class="hud-separator"></div>
-      <button
-        type="button"
-        class="hud-btn hud-pill-btn"
-        (click)="printReport()"
-        title="Print Pdf"
-      >
+      <div class="w-px h-4 bg-black/50"></div>
+      <button type="button"
+        class="px-2 py-1 border text-center align-middle text-muted-foreground cursor-pointer bg-background hover:text-accent/80 hover:font-bold active:text-accent flex items-center justify-center"
+        (click)="printReport()" title="Print PDF">
         Print
       </button>
-      <button
-        type="button"
-        class="hud-btn hud-pill-btn"
-        (click)="printReport()"
-        title="Save Template"
-      >
+      <button type="button"
+        class="px-2 py-1 border text-center align-middle text-muted-foreground cursor-pointer bg-background hover:text-accent/80 hover:font-bold active:text-accent flex items-center justify-center"
+        (click)="printReport()" title="Save Template">
         Save Template
       </button>
-      <div class="hud-separator"></div>
-      <div class="fg-label">
-        @if (isContinuous) {
-          Continuous Roll (Receipt Mode)
-        } @else {
-          {{ pages.length }} {{ pages.length === 1 ? 'Page' : 'Pages' }} Total
-        }
-      </div>
     </div>
   </div>
-  
-  
-  <div>
 
+
+  <div class="flex flex-col gap-4 p-3 border border-gray-300 rounded-2xl height-available">
+    <div>
+      <h3 class="text-sm font-semibold tracking-tight">Page Settings</h3>
+      <p class="text-xs text-muted-foreground">Paper dimensions and layout</p>
+    </div>
   </div>
 </main>
 
 <!-- Hidden Offscreen Container for Accurate Real-Life Paper Measurement (Never visible) -->
-<div
-  #measureContainer
-  class="measure-container"
-  [style.width.mm]="printableWidthMm"
->
+<div #measureContainer class="measure-container" [style.width.mm]="printableWidthMm">
   @if (templatePageHeader) {
-    <div
-      #measurePageHeader
-      class="template-section section-page-header"
-      [style.min-height.mm]="templatePageHeader.height.value"
-    >
-      @for (element of templatePageHeader.elements; track element.id) {
-        @if (isTextOrField(element)) {
-          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-            {{ resolveValue(element) }}
-          </div>
-        }
-      }
+  <div #measurePageHeader class="template-section section-page-header"
+    [style.min-height.mm]="templatePageHeader.height.value">
+    @for (element of templatePageHeader.elements; track element.id) {
+    @if (isTextOrField(element)) {
+    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+      {{ resolveValue(element) }}
     </div>
+    }
+    }
+  </div>
   }
 
   @if (templateReportHeader) {
-    <div
-      #measureReportHeader
-      class="template-section section-report-header"
-      [style.min-height.mm]="templateReportHeader.height.value"
-    >
-      @for (element of templateReportHeader.elements; track element.id) {
-        @if (isTextOrField(element)) {
-          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-            {{ resolveValue(element) }}
-          </div>
-        }
-      }
+  <div #measureReportHeader class="template-section section-report-header"
+    [style.min-height.mm]="templateReportHeader.height.value">
+    @for (element of templateReportHeader.elements; track element.id) {
+    @if (isTextOrField(element)) {
+    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+      {{ resolveValue(element) }}
     </div>
+    }
+    }
+  </div>
   }
 
   <div #measureBodySection class="template-section section-body">
     @for (element of otherBodyElements; track element.id) {
-      @if (isTextOrField(element)) {
-        <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-          {{ resolveValue(element) }}
-        </div>
-      }
+    @if (isTextOrField(element)) {
+    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+      {{ resolveValue(element) }}
+    </div>
+    }
     }
 
     @if (templateTable) {
-      <div class="report-table" [style.border-collapse]="templateTable.borderCollapse ? 'collapse' : 'separate'">
-        <div
-          #measureTableHeader
-          class="table-row table-header-row"
-          [style.grid-template-columns]="getTableColumnTemplate(templateTable)"
-          [style.min-height.mm]="templateTable.headerRow.height"
-        >
-          @for (th of templateTable.headerRow.cells; track th.id) {
-            <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
-              {{ resolveValue(th) }}
-            </div>
-          }
+    <div class="report-table" [style.border-collapse]="templateTable.borderCollapse ? 'collapse' : 'separate'">
+      <div #measureTableHeader class="table-row table-header-row"
+        [style.grid-template-columns]="getTableColumnTemplate(templateTable)"
+        [style.min-height.mm]="templateTable.headerRow.height">
+        @for (th of templateTable.headerRow.cells; track th.id) {
+        <div class="table-cell th-cell" [ngStyle]="getCellStyles(th)">
+          {{ resolveValue(th) }}
         </div>
-
-        @for (item of allTableItems; track (item.index ?? $index)) {
-          <div
-            #measureDetailRow
-            class="table-row table-detail-row"
-            [style.grid-template-columns]="getTableColumnTemplate(templateTable)"
-            [style.min-height.mm]="templateTable.detailRow.height ?? 8"
-          >
-            @for (td of templateTable.detailRow.cells; track td.id) {
-              <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
-                {{ resolveValue(td, item) }}
-              </div>
-            }
-          </div>
         }
       </div>
+
+      @for (item of allTableItems; track (item.index ?? $index)) {
+      <div #measureDetailRow class="table-row table-detail-row"
+        [style.grid-template-columns]="getTableColumnTemplate(templateTable)"
+        [style.min-height.mm]="templateTable.detailRow.height ?? 8">
+        @for (td of templateTable.detailRow.cells; track td.id) {
+        <div class="table-cell td-cell" [ngStyle]="getCellStyles(td)">
+          {{ resolveValue(td, item) }}
+        </div>
+        }
+      </div>
+      }
+    </div>
     }
   </div>
 
   @if (templateReportFooter) {
-    <div
-      #measureReportFooter
-      class="template-section section-report-footer"
-      [style.min-height.mm]="templateReportFooter.height.value"
-    >
-      @for (element of templateReportFooter.elements; track element.id) {
-        @if (isTextOrField(element)) {
-          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-            {{ resolveValue(element) }}
-          </div>
-        }
-      }
+  <div #measureReportFooter class="template-section section-report-footer"
+    [style.min-height.mm]="templateReportFooter.height.value">
+    @for (element of templateReportFooter.elements; track element.id) {
+    @if (isTextOrField(element)) {
+    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+      {{ resolveValue(element) }}
     </div>
+    }
+    }
+  </div>
   }
 
   @if (templatePageFooter) {
-    <div
-      #measurePageFooter
-      class="template-section section-page-footer"
-      [style.min-height.mm]="templatePageFooter.height.value"
-    >
-      @for (element of templatePageFooter.elements; track element.id) {
-        @if (isTextOrField(element)) {
-          <div class="grid-cell" [ngStyle]="getCellStyles(element)">
-            {{ resolveValue(element) }}
-          </div>
-        }
-      }
+  <div #measurePageFooter class="template-section section-page-footer"
+    [style.min-height.mm]="templatePageFooter.height.value">
+    @for (element of templatePageFooter.elements; track element.id) {
+    @if (isTextOrField(element)) {
+    <div class="grid-cell" [ngStyle]="getCellStyles(element)">
+      {{ resolveValue(element) }}
     </div>
+    }
+    }
+  </div>
   }
 </div>

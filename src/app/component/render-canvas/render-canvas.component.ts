@@ -16,7 +16,6 @@ import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, 
 import { report, sampleInvoiceData } from '../../data/data';
 import { PAGE_DIMENSIONS, PageSetting, PageType, ReportTemplate, TemplateSection } from '../../model/page.model';
 import { BaseCell, FieldCell, ReportTable, TextCell } from '../../model/cell.model';
-import { AtomModule, MoleculeModule } from '../futuristic-glass.module';
 
 export interface RenderedTableChunk {
   table: ReportTable;
@@ -40,7 +39,7 @@ export interface RenderedPage {
 @Component({
   selector: 'app-render-canvas',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AtomModule, MoleculeModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './render-canvas.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './render-canvas.component.css'
@@ -129,7 +128,7 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   get printableHeightMm(): number {
     return Math.max(10, this.currentSettings.height - this.currentSettings.margin.top - this.currentSettings.margin.bottom);
   }
-// ======================
+  // ======================
   get pageSetting() {
     return this.pageSettingForm.controls;
   }
@@ -156,7 +155,7 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('measureReportFooter') measureReportFooter?: ElementRef<HTMLElement>;
   @ViewChild('measurePageFooter') measurePageFooter?: ElementRef<HTMLElement>;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.updateCurrentSettings();
@@ -701,7 +700,7 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     let val = textCell.value ?? textCell.staticText ?? '';
     if (typeof val === 'string') {
       val = val.replace(/\{\{pageNumber\}\}/g, String(pageNumber))
-               .replace(/\{\{totalPages\}\}/g, String(totalPages));
+        .replace(/\{\{totalPages\}\}/g, String(totalPages));
     }
     return val;
   }
@@ -730,10 +729,10 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       const formatted = isNaN(num)
         ? val
         : num.toLocaleString('en-US', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-            useGrouping: formatter.useGrouping !== false
-          });
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+          useGrouping: formatter.useGrouping !== false
+        });
       return `${symbol}${formatted}`;
     }
 
@@ -743,10 +742,10 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       return isNaN(num)
         ? val
         : num.toLocaleString('en-US', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-            useGrouping: formatter.useGrouping !== false
-          });
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+          useGrouping: formatter.useGrouping !== false
+        });
     }
 
     return String(val);
@@ -794,14 +793,14 @@ export class RenderCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
         textCell.blockAlignment === 'middle'
           ? 'center'
           : textCell.blockAlignment === 'bottom'
-          ? 'flex-end'
-          : 'flex-start';
+            ? 'flex-end'
+            : 'flex-start';
       styles['justify-content'] =
         textCell.inlineAlignment === 'right'
           ? 'flex-end'
           : textCell.inlineAlignment === 'center'
-          ? 'center'
-          : 'flex-start';
+            ? 'center'
+            : 'flex-start';
     }
 
     // CSS Grid placement
